@@ -1,0 +1,502 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AFRINOVA — L'innovation au service de vos projets</title>
+  <meta name="description" content="AFRINOVA, un partenaire global, des solutions locales. BTP, Informatique, Santé numérique, Immigration, Échange de devises, Location de voitures et Multiservices." />
+  <link rel="icon" type="image/svg+xml" href="{% static 'assets/favicon.svg' %}" />
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" sizes="16x16 32x32 48x48 64x64" />
+  <link rel="apple-touch-icon" href="{% static 'assets/logo.jpeg' %}" />
+  <link rel="mask-icon" href="{% static 'assets/favicon.svg' %}" color="#1B2A63" />
+  <meta name="theme-color" content="#1B2A63" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="container nav-wrap">
+      <a href="#top" class="brand">
+        <img src="{% static 'assets/logo.jpeg' %}" alt="Logo AFRINOVA" class="brand-logo" />
+        <span class="brand-name">AFRI<span class="accent">NOVA</span></span>
+      </a>
+
+      <nav class="nav" id="nav">
+        <a href="#services">Services</a>
+        <a href="#realisations">Réalisations</a>
+        <a href="#about">À propos</a>
+        <a href="#process">Démarche</a>
+        <a href="#contact">Contact</a>
+        <a href="#contact" class="btn btn-primary btn-sm nav-cta">Devis gratuit</a>
+      </nav>
+
+      <button class="burger" id="burger" aria-label="Ouvrir le menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container hero-inner">
+      <div class="hero-text reveal">
+        <span class="eyebrow">Un partenaire global, des solutions locales</span>
+        <h1>L'innovation au service de <span class="grad">vos projets</span></h1>
+        <p class="lead">
+          AFRINOVA réunit sept expertises sous un même toit pour accompagner
+          particuliers, entreprises et institutions en Afrique et à l'international.
+          De la construction au numérique, nous transformons vos ambitions en réalités.
+        </p>
+        <div class="hero-actions">
+          <a href="#services" class="btn btn-primary">Découvrir nos services</a>
+          <a href="#contact" class="btn btn-ghost">Nous contacter</a>
+        </div>
+        <div class="hero-badges">
+          <div><strong>7</strong><span>pôles d'expertise</span></div>
+          <div><strong>360°</strong><span>accompagnement</span></div>
+          <div><strong>24/7</strong><span>à votre écoute</span></div>
+        </div>
+      </div>
+
+      <div class="hero-card reveal">
+        <img src="{% static 'assets/logo.jpeg' %}" alt="AFRINOVA" class="hero-logo" />
+        <div class="hero-card-glow"></div>
+      </div>
+    </div>
+    <div class="marquee">
+      <div class="marquee-track">
+        <span>BTP</span><span>•</span><span>Informatique</span><span>•</span><span>Santé numérique</span><span>•</span><span>Immigration</span><span>•</span><span>Échange de devises</span><span>•</span><span>Location de voitures</span><span>•</span><span>Multiservices</span><span>•</span>
+        <span>BTP</span><span>•</span><span>Informatique</span><span>•</span><span>Santé numérique</span><span>•</span><span>Immigration</span><span>•</span><span>Échange de devises</span><span>•</span><span>Location de voitures</span><span>•</span><span>Multiservices</span><span>•</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SERVICES ============ -->
+  <section class="section" id="services">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">Nos pôles d'expertise</span>
+        <h2>Sept métiers, une seule exigence&nbsp;: l'excellence</h2>
+        <p>Chaque pôle est porté par des équipes spécialisées. Ensemble, ils forment
+          un écosystème complet pour répondre à tous vos besoins.</p>
+      </div>
+
+      <div class="services-grid">
+        <!-- BTP -->
+        <a class="service-card service-link reveal" href="service.html?p=btp" style="--c:#1B2A63">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3M9 9h0M9 13h0M9 17h0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>BTP</h3>
+          <p>Construction, rénovation, génie civil et suivi de chantier. Nous bâtissons des
+            ouvrages durables, dans le respect des délais et des normes.</p>
+          <ul><li>Gros œuvre & second œuvre</li><li>Maîtrise d'ouvrage</li><li>Rénovation</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- Informatique -->
+        <a class="service-card service-link reveal" href="service.html?p=informatique" style="--c:#F47920">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="12" rx="1.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 20h8M9.5 9l-2 2 2 2M14.5 9l2 2-2 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Informatique</h3>
+          <p>Développement web & mobile, infrastructure réseau, cybersécurité et
+            transformation digitale sur mesure pour votre organisation.</p>
+          <ul><li>Sites & applications</li><li>Cloud & infrastructure</li><li>Cybersécurité</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- Santé numérique -->
+        <a class="service-card service-link reveal" href="service.html?p=sante" style="--c:#1AAA5E">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="6" y="2.5" width="12" height="19" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M8 12h2l1.2-2.5L13 15l1-3h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Santé numérique</h3>
+          <p>Télémédecine, dossiers patients dématérialisés et applications de suivi pour
+            rendre les soins plus accessibles et plus efficaces.</p>
+          <ul><li>Téléconsultation</li><li>Dossier médical digital</li><li>e-santé</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- Immigration -->
+        <a class="service-card service-link reveal" href="service.html?p=immigration" style="--c:#6B3FA0">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" stroke="currentColor" stroke-width="1.6"/></svg>
+          </div>
+          <h3>Immigration</h3>
+          <p>Accompagnement complet pour vos démarches&nbsp;: visa, études, travail et
+            installation à l'étranger, avec un suivi personnalisé.</p>
+          <ul><li>Visa & titres de séjour</li><li>Études à l'étranger</li><li>Installation</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- Échange de devises -->
+        <a class="service-card service-link reveal" href="service.html?p=devises" style="--c:#1B8A6B">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 8h13l-3-3M20 16H7l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3>Échange de devises</h3>
+          <p>Change, transfert d'argent et solutions financières fiables, avec des taux
+            transparents et une exécution rapide et sécurisée.</p>
+          <ul><li>Change multi-devises</li><li>Transfert d'argent</li><li>Conseil financier</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- Location de voitures -->
+        <a class="service-card service-link reveal" href="service.html?p=location" style="--c:#2563C9">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13v5h-2v-2H5v2H3v-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="16" r="1.3" fill="currentColor"/><circle cx="17" cy="16" r="1.3" fill="currentColor"/></svg>
+          </div>
+          <h3>Location de voitures</h3>
+          <p>Une flotte entretenue pour vos déplacements&nbsp;: courte ou longue durée,
+            avec ou sans chauffeur, en ville comme à l'international.</p>
+          <ul><li>Courte & longue durée</li><li>Avec chauffeur</li><li>Transfert aéroport</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- Multiservices -->
+        <a class="service-card service-link reveal" href="service.html?p=multiservices" style="--c:#243375">
+          <div class="service-icon">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="2.4" stroke="currentColor" stroke-width="1.6"/><circle cx="16" cy="9" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 19c.6-2.6 2.4-4 4.5-4s3.9 1.4 4.5 4M12 19c.6-2.6 2.4-4 4.5-4s3.9 1.4 4.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <h3>Multiservices</h3>
+          <p>Une réponse unique à vos besoins variés. Nous coordonnons nos pôles pour
+            vous offrir des solutions intégrées et clés en main.</p>
+          <ul><li>Solutions sur mesure</li><li>Conciergerie pro</li><li>Externalisation</li></ul>
+          <span class="service-more">Voir le détail <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+
+        <!-- CTA card -->
+        <article class="service-card cta-card reveal">
+          <h3>Un besoin particulier&nbsp;?</h3>
+          <p>Parlez-nous de votre projet. Nous construisons la solution qui vous ressemble.</p>
+          <a href="#contact" class="btn btn-light">Demander un devis</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RÉALISATIONS ============ -->
+  <section class="section section-alt" id="realisations">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">Nos réalisations</span>
+        <h2>Des projets concrets, des résultats mesurables</h2>
+        <p>Un aperçu des missions menées par nos équipes à travers nos différents pôles.
+          Chaque projet reflète notre exigence de qualité et notre sens de l'engagement.</p>
+      </div>
+
+      <div class="filters reveal" id="filters">
+        <button class="filter-btn active" data-filter="all">Tous</button>
+        <button class="filter-btn" data-filter="btp">BTP</button>
+        <button class="filter-btn" data-filter="info">Informatique</button>
+        <button class="filter-btn" data-filter="sante">Santé numérique</button>
+        <button class="filter-btn" data-filter="immigration">Immigration</button>
+        <button class="filter-btn" data-filter="devises">Devises</button>
+        <button class="filter-btn" data-filter="location">Location</button>
+      </div>
+
+      <div class="work-grid" id="workGrid">
+        <article class="work-card reveal" data-cat="btp" style="--c:#1B2A63">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21h18M6 21V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v16M15 21V9h3a1 1 0 0 1 1 1v11M9 8h3M9 12h3M9 16h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="work-badge">BTP</span></div>
+          <div class="work-body">
+            <h3>Résidence Les Palmiers</h3>
+            <p>Construction d'un immeuble résidentiel R+4 livré clés en main, dans le respect des délais.</p>
+            <div class="work-meta"><span>📍 Douala</span><span>2024</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="info" style="--c:#F47920">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.4 12.3a1 1 0 0 0 1 .8h8.7a1 1 0 0 0 1-.8L21 8H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="18" cy="20" r="1.4" fill="currentColor"/></svg></span><span class="work-badge">Informatique</span></div>
+          <div class="work-body">
+            <h3>Plateforme e-commerce</h3>
+            <p>Site marchand avec paiement mobile intégré et tableau de bord de gestion des commandes.</p>
+            <div class="work-meta"><span>🌍 Web</span><span>2024</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="sante" style="--c:#1AAA5E">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M2.5 12h3l1.8-5 3 11 2.4-7 1.4 3 1.4-2H21.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="work-badge">Santé numérique</span></div>
+          <div class="work-body">
+            <h3>Application de téléconsultation</h3>
+            <p>Mise en relation patients-médecins avec prise de rendez-vous et dossier médical en ligne.</p>
+            <div class="work-meta"><span>📱 Mobile</span><span>2024</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="immigration" style="--c:#6B3FA0">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M12 4 2 9l10 5 10-5-10-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 11.5V16c0 1.1 2.7 2.5 6 2.5s6-1.4 6-2.5v-4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 9v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span class="work-badge">Immigration</span></div>
+          <div class="work-body">
+            <h3>Programme « Études à l'étranger »</h3>
+            <p>Accompagnement de dossiers visa et inscription universitaire, de la demande à l'installation.</p>
+            <div class="work-meta"><span>✈️ International</span><span>2023</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="btp" style="--c:#2563C9">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3 4 21M17 3l3 18M12 4.5v3M12 11v2.5M12 16.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="work-badge">BTP</span></div>
+          <div class="work-body">
+            <h3>Réhabilitation de voirie</h3>
+            <p>Réfection et aménagement de plusieurs kilomètres de route urbaine et de réseaux associés.</p>
+            <div class="work-meta"><span>📍 Yaoundé</span><span>2023</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="devises" style="--c:#1B8A6B">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M4 8h12l-3-3M20 16H8l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="work-badge">Échange de devises</span></div>
+          <div class="work-body">
+            <h3>Ouverture d'un bureau de change</h3>
+            <p>Mise en place d'un point de change multi-devises avec service de transfert d'argent sécurisé.</p>
+            <div class="work-meta"><span>🏦 Agence</span><span>2024</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="info" style="--c:#243375">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4v16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="7" y="11" width="2.6" height="6" rx=".5" fill="currentColor"/><rect x="12" y="8" width="2.6" height="9" rx=".5" fill="currentColor"/><rect x="17" y="13" width="2.6" height="4" rx=".5" fill="currentColor"/></svg></span><span class="work-badge">Informatique</span></div>
+          <div class="work-body">
+            <h3>Logiciel de gestion (ERP)</h3>
+            <p>Solution sur mesure de gestion commerciale et de stock pour une PME en pleine croissance.</p>
+            <div class="work-meta"><span>💻 Sur mesure</span><span>2023</span></div>
+          </div>
+        </article>
+
+        <article class="work-card reveal" data-cat="location" style="--c:#F47920">
+          <div class="work-cover"><span class="work-emoji"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13v5h-2v-2H5v2H3v-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="16" r="1.3" fill="currentColor"/><circle cx="17" cy="16" r="1.3" fill="currentColor"/></svg></span><span class="work-badge">Location de voitures</span></div>
+          <div class="work-body">
+            <h3>Service flotte & transferts</h3>
+            <p>Mise à disposition d'une flotte avec chauffeur pour déplacements professionnels et événements.</p>
+            <div class="work-meta"><span>🛬 Aéroport</span><span>2024</span></div>
+          </div>
+        </article>
+      </div>
+
+      <p class="work-note reveal">Ces exemples illustrent notre savoir-faire — remplacez-les par vos propres projets et photos.</p>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section class="section" id="about">
+    <div class="container about-grid">
+      <div class="about-visual reveal">
+        <div class="about-emblem">
+          <img src="{% static 'assets/logo.jpeg' %}" alt="AFRINOVA" />
+        </div>
+        <div class="float-tag tag-1">🏗️ BTP</div>
+        <div class="float-tag tag-2">💻 Numérique</div>
+        <div class="float-tag tag-3">🌍 International</div>
+      </div>
+
+      <div class="about-text reveal">
+        <span class="kicker">À propos d'AFRINOVA</span>
+        <h2>Un partenaire global,<br><span class="accent">des solutions locales</span></h2>
+        <p>
+          AFRINOVA est née d'une conviction&nbsp;: les meilleures réponses naissent de la
+          rencontre entre l'innovation mondiale et la connaissance fine du terrain.
+          Nous mettons cette philosophie au service de vos projets, quels que soient
+          leur taille et leur secteur.
+        </p>
+        <div class="values">
+          <div class="value">
+            <h4>Proximité</h4>
+            <p>Des équipes locales qui comprennent vos enjeux et votre contexte.</p>
+          </div>
+          <div class="value">
+            <h4>Innovation</h4>
+            <p>Des outils et méthodes modernes pour des résultats concrets.</p>
+          </div>
+          <div class="value">
+            <h4>Fiabilité</h4>
+            <p>Des engagements tenus, en toute transparence, du début à la fin.</p>
+          </div>
+          <div class="value">
+            <h4>Polyvalence</h4>
+            <p>Sept expertises coordonnées, un seul interlocuteur de confiance.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FONDATEUR ============ -->
+  <section class="section section-alt" id="founder">
+    <div class="container founder-wrap">
+      <div class="founder-media reveal">
+        <div class="founder-avatar">
+          <img src="{% static 'assets/fondateur-portrait.jpeg' %}" alt="Choudja Alain, fondateur d'AFRINOVA" class="founder-photo" />
+        </div>
+      </div>
+
+      <div class="founder-content reveal">
+        <span class="kicker">Le mot du fondateur</span>
+        <h2>Choudja Alain</h2>
+        <p class="founder-role">Fondateur &amp; Dirigeant d'AFRINOVA</p>
+        <blockquote class="founder-quote">
+          « J'ai fondé AFRINOVA avec une conviction&nbsp;: réunir plusieurs expertises
+          sous un même toit pour offrir, à chacun, des solutions fiables et accessibles.
+          Notre force, c'est d'allier l'innovation à une vraie proximité avec le terrain. »
+        </blockquote>
+        <p>
+          Animé par l'esprit d'entreprise et le sens du service, Choudja Alain pilote
+          AFRINOVA avec une exigence constante&nbsp;: transformer chaque projet, petit ou grand,
+          en une réussite durable pour nos clients et nos partenaires.
+        </p>
+        <div class="founder-sign">Choudja Alain</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROCESS ============ -->
+  <section class="section" id="process">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="kicker">Notre démarche</span>
+        <h2>De l'idée à la réalisation</h2>
+        <p>Une méthode claire en quatre étapes pour avancer sereinement, ensemble.</p>
+      </div>
+      <div class="steps">
+        <div class="step reveal"><span class="step-num">01</span><h3>Écoute</h3><p>Nous analysons votre besoin et votre contexte pour bien comprendre vos objectifs.</p></div>
+        <div class="step reveal"><span class="step-num">02</span><h3>Stratégie</h3><p>Nous concevons une solution sur mesure, chiffrée et planifiée en toute transparence.</p></div>
+        <div class="step reveal"><span class="step-num">03</span><h3>Exécution</h3><p>Nos équipes mobilisent les bons savoir-faire et pilotent le projet de bout en bout.</p></div>
+        <div class="step reveal"><span class="step-num">04</span><h3>Suivi</h3><p>Nous restons à vos côtés après livraison pour garantir des résultats durables.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATS ============ -->
+  <section class="stats" id="stats">
+    <div class="container stats-grid">
+      <div class="stat reveal"><span class="stat-num" data-target="7">0</span><span class="stat-suffix"></span><p>Pôles d'expertise</p></div>
+      <div class="stat reveal"><span class="stat-num" data-target="500">0</span><span class="stat-suffix">+</span><p>Projets accompagnés</p></div>
+      <div class="stat reveal"><span class="stat-num" data-target="98">0</span><span class="stat-suffix">%</span><p>Clients satisfaits</p></div>
+      <div class="stat reveal"><span class="stat-num" data-target="24">0</span><span class="stat-suffix">/7</span><p>Support disponible</p></div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section class="section" id="contact">
+    <div class="container contact-grid">
+      <div class="contact-info reveal">
+        <span class="kicker">Contact</span>
+        <h2>Parlons de votre projet</h2>
+        <p>Une question, un devis, une idée&nbsp;? Notre équipe vous répond rapidement.</p>
+
+        <ul class="contact-list">
+          <li>
+            <span class="ci-icon">📍</span>
+            <div><strong>Adresse</strong><span>Obili, Yaoundé — Cameroun</span></div>
+          </li>
+          <li>
+            <span class="ci-icon">✉️</span>
+            <div><strong>Email</strong><a href="mailto:contact@afrinova.com">contact@afrinova.com</a></div>
+          </li>
+          <li>
+            <span class="ci-icon">📞</span>
+            <div>
+              <strong>Téléphone</strong>
+              <a href="tel:+237659232292">+237 659 23 22 92</a>
+              <a href="tel:+237652769709">+237 652 76 97 09</a>
+            </div>
+          </li>
+        </ul>
+
+        <div class="hours">
+          <strong>Horaires</strong>
+          <span>Lun – Sam · 8h00 – 19h00</span>
+        </div>
+      </div>
+
+      <form class="contact-form reveal" id="contactForm" novalidate>
+        <div class="field">
+          <label for="name">Nom complet</label>
+          <input type="text" id="name" name="name" placeholder="Votre nom" required />
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="vous@email.com" required />
+          </div>
+          <div class="field">
+            <label for="phone">Téléphone</label>
+            <input type="tel" id="phone" name="phone" placeholder="+237 6XX XX XX XX" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="service">Service concerné</label>
+          <select id="service" name="service">
+            <option value="">Choisir un pôle…</option>
+            <option>BTP</option>
+            <option>Informatique</option>
+            <option>Santé numérique</option>
+            <option>Immigration</option>
+            <option>Échange de devises</option>
+            <option>Location de voitures</option>
+            <option>Multiservices</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="message">Votre message</label>
+          <textarea id="message" name="message" rows="4" placeholder="Décrivez votre besoin…" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Envoyer ma demande</button>
+        <p class="form-note" id="formNote" hidden>✅ Merci&nbsp;! Votre message a bien été pris en compte.</p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#top" class="brand">
+          <img src="{% static 'assets/logo.jpeg' %}" alt="AFRINOVA" class="brand-logo" />
+          <span class="brand-name">AFRI<span class="accent">NOVA</span></span>
+        </a>
+        <p>L'innovation au service de vos projets.<br>Un partenaire global, des solutions locales.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="service.html?p=btp">BTP</a>
+        <a href="service.html?p=informatique">Informatique</a>
+        <a href="service.html?p=sante">Santé numérique</a>
+        <a href="service.html?p=immigration">Immigration</a>
+      </div>
+      <div class="footer-col">
+        <h4>&nbsp;</h4>
+        <a href="service.html?p=devises">Échange de devises</a>
+        <a href="service.html?p=location">Location de voitures</a>
+        <a href="service.html?p=multiservices">Multiservices</a>
+      </div>
+      <div class="footer-col">
+        <h4>Entreprise</h4>
+        <a href="#realisations">Réalisations</a>
+        <a href="#about">À propos</a>
+        <a href="#founder">Le fondateur</a>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> AFRINOVA — Tous droits réservés. · <a href="admin.html" style="opacity:.6">Espace admin</a></p>
+      <div class="socials">
+        <a href="#" aria-label="Facebook">Facebook</a>
+        <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        <a href="#" aria-label="Instagram">Instagram</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#top" class="to-top" id="toTop" aria-label="Remonter en haut">↑</a>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/services-data.js' %}"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/home.js' %}"></script>
+  <script src="{% static 'js/chatbot.js' %}"></script>
+</body>
+</html>

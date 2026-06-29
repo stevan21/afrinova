@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AFRINOVA — Service</title>
+  <meta name="description" content="Découvrez en détail ce pôle d'expertise d'AFRINOVA : prestations et réalisations." />
+  <link rel="icon" type="image/svg+xml" href="{% static 'assets/favicon.svg' %}" />
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" sizes="16x16 32x32 48x48 64x64" />
+  <link rel="apple-touch-icon" href="{% static 'assets/logo.jpeg' %}" />
+  <meta name="theme-color" content="#1B2A63" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+<body>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header" id="top">
+    <div class="container nav-wrap">
+      <a href="index.html" class="brand">
+        <img src="{% static 'assets/logo.jpeg' %}" alt="Logo AFRINOVA" class="brand-logo" />
+        <span class="brand-name">AFRI<span class="accent">NOVA</span></span>
+      </a>
+
+      <nav class="nav" id="nav">
+        <a href="index.html#services">Services</a>
+        <a href="index.html#realisations">Réalisations</a>
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#founder">Fondateur</a>
+        <a href="index.html#contact" class="btn btn-primary btn-sm nav-cta">Devis gratuit</a>
+      </nav>
+
+      <button class="burger" id="burger" aria-label="Ouvrir le menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ HERO DU SERVICE ============ -->
+  <section class="svc-hero" id="svcHero">
+    <div class="container">
+      <nav class="crumb">
+        <a href="index.html">Accueil</a><span>/</span>
+        <a href="index.html#services">Services</a><span>/</span>
+        <em id="crumbName">Service</em>
+      </nav>
+      <div class="svc-hero-grid">
+        <div class="svc-hero-text">
+          <span class="svc-kicker">Pôle d'expertise</span>
+          <h1 id="svcName">Service</h1>
+          <p class="svc-tagline" id="svcTagline"></p>
+          <div class="svc-hero-actions">
+            <a href="index.html#contact" class="btn btn-primary">Demander un devis</a>
+            <a href="index.html#services" class="btn btn-ghost">← Tous les services</a>
+          </div>
+        </div>
+        <div class="svc-hero-icon" id="svcIcon"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INTRO + ATOUTS ============ -->
+  <section class="section">
+    <div class="container svc-intro-grid">
+      <div class="svc-intro" id="svcIntro"></div>
+      <aside class="svc-aside">
+        <div class="svc-stats" id="svcStats"></div>
+        <div class="svc-atouts">
+          <h4>Pourquoi nous choisir&nbsp;?</h4>
+          <ul id="svcAtouts"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ PRESTATIONS ============ -->
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Nos prestations</span>
+        <h2>Ce que nous proposons</h2>
+        <p>Des services concrets, adaptés à vos besoins et à votre budget.</p>
+      </div>
+      <div class="presta-grid" id="svcPrestations"></div>
+    </div>
+  </section>
+
+  <!-- ============ RÉALISATIONS ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Nos réalisations</span>
+        <h2>Quelques travaux récents</h2>
+        <p>Un aperçu des missions menées par ce pôle.</p>
+      </div>
+      <div class="work-grid" id="svcRealisations"></div>
+      <p class="work-note">Exemples illustratifs — à remplacer par vos propres projets et photos.</p>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="svc-cta" id="svcCta">
+    <div class="container">
+      <h2>Un projet en tête&nbsp;?</h2>
+      <p>Parlons-en. Notre équipe vous répond rapidement et vous propose une solution adaptée.</p>
+      <div class="svc-cta-actions">
+        <a href="index.html#contact" class="btn btn-light">Nous contacter</a>
+        <a href="tel:+237659232292" class="btn btn-ghost-light">+237 659 23 22 92</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="brand">
+          <img src="{% static 'assets/logo.jpeg' %}" alt="AFRINOVA" class="brand-logo" />
+          <span class="brand-name">AFRI<span class="accent">NOVA</span></span>
+        </a>
+        <p>L'innovation au service de vos projets.<br>Un partenaire global, des solutions locales.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="service.html?p=btp">BTP</a>
+        <a href="service.html?p=informatique">Informatique</a>
+        <a href="service.html?p=sante">Santé numérique</a>
+        <a href="service.html?p=immigration">Immigration</a>
+      </div>
+      <div class="footer-col">
+        <h4>&nbsp;</h4>
+        <a href="service.html?p=devises">Échange de devises</a>
+        <a href="service.html?p=location">Location de voitures</a>
+        <a href="service.html?p=multiservices">Multiservices</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <a href="tel:+237659232292">+237 659 23 22 92</a>
+        <a href="tel:+237652769709">+237 652 76 97 09</a>
+        <a href="index.html#contact">Obili, Yaoundé</a>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> AFRINOVA — Tous droits réservés.</p>
+      <div class="socials">
+        <a href="#" aria-label="Facebook">Facebook</a>
+        <a href="#" aria-label="LinkedIn">LinkedIn</a>
+        <a href="#" aria-label="Instagram">Instagram</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#top" class="to-top" id="toTop" aria-label="Remonter en haut">↑</a>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/services-data.js' %}"></script>
+  <script src="{% static 'js/service.js' %}"></script>
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="{% static 'js/chatbot.js' %}"></script>
+</body>
+</html>
