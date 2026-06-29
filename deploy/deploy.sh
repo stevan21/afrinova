@@ -8,7 +8,8 @@
 set -e
 
 DOMAIN="${1:-_}"
-APP_DIR="/opt/afrinova"
+# Racine du projet = dossier parent de ce script (fonctionne depuis n'importe où)
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IP="$(hostname -I | awk '{print $1}')"
 
 echo "==> Domaine : $DOMAIN   |   IP : $IP   |   Dossier : $APP_DIR"
@@ -17,11 +18,7 @@ echo "==> Domaine : $DOMAIN   |   IP : $IP   |   Dossier : $APP_DIR"
 apt update
 apt install -y python3 python3-venv python3-pip nginx
 
-# 2) Le code doit déjà être dans $APP_DIR (git clone). Sinon on recopie le dossier courant.
-if [ "$(pwd)" != "$APP_DIR" ]; then
-  mkdir -p "$APP_DIR"
-  cp -r ./. "$APP_DIR"/
-fi
+# 2) Se placer dans le dossier du projet
 cd "$APP_DIR"
 
 # 3) Environnement Python
