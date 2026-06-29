@@ -66,12 +66,12 @@ systemctl daemon-reload
 systemctl enable --now afrinova
 systemctl restart afrinova
 
-# 8) Nginx (reverse proxy)
+# 8) Nginx (reverse proxy) — vhost ISOLÉ, on ne touche à aucune autre config
 sed "s/SERVER_NAME/$DOMAIN/" deploy/afrinova-nginx.conf > /etc/nginx/sites-available/afrinova
 ln -sf /etc/nginx/sites-available/afrinova /etc/nginx/sites-enabled/afrinova
-rm -f /etc/nginx/sites-enabled/default
+# (On NE supprime PAS le site par défaut ni les autres vhosts éventuels.)
 nginx -t
-systemctl restart nginx
+systemctl reload nginx
 
 echo ""
 echo "============================================================"
