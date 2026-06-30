@@ -34,8 +34,9 @@
     $('loginErr').hidden = true;
     try {
       const res = await API.login($('loginUser').value.trim(), $('loginCode').value);
-      if (!res.user.is_staff) { $('loginErr').textContent = "Accès réservé à l'administration."; $('loginErr').hidden = false; return; }
-      API.setToken(res.token); state.me = res.user; await enter();
+      API.setToken(res.token);
+      if (!res.user.is_staff) { location.replace('expert.html'); return; }
+      state.me = res.user; await enter();
     } catch (err) { $('loginErr').textContent = 'Identifiants incorrects.'; $('loginErr').hidden = false; }
   });
   $('logout').addEventListener('click', async () => { await API.logout(); API.setToken(null); state.me = null; showLogin(); });
@@ -418,7 +419,7 @@
   /* ====== Démarrage ====== */
   (async function () {
     if (API.getToken()) {
-      try { const u = await API.me(); if (u.is_staff) { state.me = u; await enter(); return; } } catch (e) {}
+      try { const u = await API.me(); if (u.is_staff) { state.me = u; await enter(); return; } else { location.replace('expert.html'); return; } } catch (e) {}
       API.setToken(null);
     }
     showLogin();

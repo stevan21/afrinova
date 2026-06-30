@@ -117,13 +117,16 @@ Puis **Restart** de l'application Python dans le hPanel.
 
 Fichiers fournis dans `deploy/` : `deploy.sh`, `afrinova.service`, `afrinova-nginx.conf`.
 
-1. **Envoyer le code** sur le VPS dans `/opt/afrinova` (SFTP type FileZilla, ou `git clone`).
-2. **Renseigner le domaine** dans `.env.production` (`DJANGO_ALLOWED_HOSTS`,
-   `DJANGO_CSRF_TRUSTED_ORIGINS`). L'IP du VPS y est déjà pour un test immédiat.
-3. **Lancer le déploiement** (en root, sur le VPS) :
+1. **Cloner le code** sur le VPS dans `/opt/afrinova` :
+   ```bash
+   apt update && apt install -y git
+   git clone https://github.com/stevan21/afrinova.git /opt/afrinova
+   ```
+2. **Lancer le déploiement** (en root, sur le VPS) — le `.env` (avec une
+   `SECRET_KEY` unique) est généré automatiquement à partir du domaine :
    ```bash
    cd /opt/afrinova
-   bash deploy/deploy.sh votre-domaine.com      # ou sans argument pour l'IP
+   bash deploy/deploy.sh afrinovagroupe.com     # ou sans argument pour l'IP
    ```
    Le script installe Python/nginx, crée le venv, installe les dépendances,
    `collectstatic` + `migrate` + `prodinit`, configure le service systemd (gunicorn)

@@ -14,6 +14,8 @@ urlpatterns = [
     path("service.html", views.service, name="service"),
     path("admin.html", views.admin_page, name="admin-page"),
     path("expert.html", views.expert_page, name="expert-page"),
+    path("connexion.html", views.connexion, name="connexion"),
+    path("connexion", views.connexion),
 
     # Médias (photos uploadées) — servis en dev comme en prod
     re_path(r"^media/(?P<path>.*)$", static_serve, {"document_root": settings.MEDIA_ROOT}),

@@ -179,3 +179,7 @@ def admin_page(request):
 
 def expert_page(request):
     return render(request, "expert.html")
+
+
+def connexion(request):
+    return render(request, "connexion.html")

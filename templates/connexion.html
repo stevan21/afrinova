@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AFRINOVA — Connexion</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" type="image/svg+xml" href="{% static 'assets/favicon.svg' %}" />
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}" />
+  <meta name="theme-color" content="#1B2A63" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+</head>
+<body>
+  <div class="login-wrap">
+    <form class="login-card" id="loginForm">
+      <img src="{% static 'assets/logo.jpeg' %}" alt="AFRINOVA" />
+      <h1>Connexion</h1>
+      <p>Connectez-vous à votre espace AFRINOVA.</p>
+      <div class="field">
+        <label for="loginUser">Identifiant</label>
+        <input type="text" id="loginUser" placeholder="votre identifiant" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="loginCode">Mot de passe</label>
+        <input type="password" id="loginCode" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%" id="loginBtn">Se connecter</button>
+      <p class="login-err" id="loginErr" hidden>Identifiants incorrects.</p>
+      <p class="login-hint"><a href="index.html">← Retour au site</a></p>
+    </form>
+  </div>
+
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/connexion.js' %}"></script>
+</body>
+</html>
