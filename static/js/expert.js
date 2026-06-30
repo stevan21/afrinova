@@ -19,8 +19,9 @@
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
 
   const loginScreen = $('login'), appScreen = $('app'), viewEl = $('view'), titleEl = $('viewTitle');
-  const state = { me: null, expertises: [], notes: [], reports: [], members: [], messages: [] };
-  let editingExp = null, pendingFile = null, pendingURL = '', editNote = null, editReport = null, chatId = null;
+  const state = { me: null, service: null, notes: [], reports: [], members: [], messages: [] };
+  let pendingFile = null, pendingURL = '', editNote = null, editReport = null, chatId = null;
+  let editPres = null, editReal = null, pendingRealFile = null;
 
   /* ====== Toast ====== */
   let toastT;
@@ -37,14 +38,12 @@
   $('logout').addEventListener('click', async () => { await API.logout(); API.setToken(null); state.me = null; showLogin(); });
 
   /* ====== Navigation SPA ====== */
-  const TITLES = { dashboard: 'Tableau de bord', expertises: 'Expertises', notes: 'Notes', rapports: 'Rapports', messages: 'Messages' };
-  const ACTIVE = { ajouter: 'expertises' };
-  const RENDER = { dashboard: renderDashboard, expertises: renderExpertises, ajouter: renderAjouter, notes: renderNotes, rapports: renderRapports, messages: renderMessages };
+  const TITLES = { dashboard: 'Tableau de bord', service: 'Ma page service', notes: 'Notes', rapports: 'Rapports', messages: 'Messages' };
+  const RENDER = { dashboard: renderDashboard, service: renderService, notes: renderNotes, rapports: renderRapports, messages: renderMessages };
 
   async function setView(name) {
-    titleEl.textContent = name === 'ajouter' ? (editingExp ? "Modifier l'expertise" : 'Ajouter une expertise') : TITLES[name];
-    const act = ACTIVE[name] || name;
-    document.querySelectorAll('#sideNav button').forEach(b => b.classList.toggle('active', b.dataset.view === act));
+    titleEl.textContent = TITLES[name] || '';
+    document.querySelectorAll('#sideNav button').forEach(b => b.classList.toggle('active', b.dataset.view === name));
     viewEl.innerHTML = '<div class="empty">Chargement…</div>';
     closeSidebar();
     try { await ensureData(name); }
@@ -52,14 +51,15 @@
     viewEl.innerHTML = RENDER[name]();
     bindView(name);
   }
+  async function loadMyService() { try { return await API.get('/my-service/'); } catch (e) { return null; } }
   async function ensureData(name) {
-    if (name === 'dashboard') { const [e, n, r] = await Promise.all([API.get('/expertises/'), API.get('/notes/'), API.get('/reports/')]); state.expertises = e; state.notes = n; state.reports = r; }
-    else if (name === 'expertises' || name === 'ajouter') state.expertises = await API.get('/expertises/');
+    if (name === 'dashboard') { const [s, n, r] = await Promise.all([loadMyService(), API.get('/notes/'), API.get('/reports/')]); state.service = s; state.notes = n; state.reports = r; }
+    else if (name === 'service') state.service = await loadMyService();
     else if (name === 'notes') state.notes = await API.get('/notes/');
     else if (name === 'rapports') state.reports = await API.get('/reports/');
     else if (name === 'messages') { const [m, msg] = await Promise.all([API.get('/members/'), API.get('/messages/')]); state.members = m; state.messages = msg; }
   }
-  $('sideNav').addEventListener('click', (e) => { const b = e.target.closest('button[data-view]'); if (b) setView(b.dataset.view); });
+  $('sideNav').addEventListener('click', (e) => { const b = e.target.closest('button[data-view]'); if (b) { editPres = null; editReal = null; setView(b.dataset.view); } });
 
   /* ====== Sidebar mobile ====== */
   const sidebar = $('sidebar'), backdrop = $('backdrop');
@@ -68,56 +68,88 @@
   $('sideToggle').addEventListener('click', openSidebar);
   backdrop.addEventListener('click', closeSidebar);
 
-  /* ====== Expertises ====== */
-  function expTop(x) {
-    if (x.photo) return `<div class="exp-top has-photo"><img src="${x.photo}" alt="${esc(x.name)}"></div>`;
-    return `<div class="exp-top" style="background:${x.color || '#1B2A63'}"><span class="exp-ic">${esc(x.name ? x.name.trim()[0].toUpperCase() : '★')}</span></div>`;
-  }
-  function expCard(x, ro) {
-    const actions = ro ? '' : `<div class="exp-actions"><button class="btn-icon edit" data-edit="${x.id}" title="Modifier">${IC.pencil}</button><button class="btn-icon" data-del="${x.id}" title="Supprimer">${IC.trash}</button></div>`;
-    return `<div class="exp-card${x.id === editingExp ? ' editing' : ''}" data-k="${esc(norm(x.name + ' ' + (x.description || '')))}">${actions}${expTop(x)}<div class="exp-body"><h4>${esc(x.name)}</h4><p>${esc(x.description || '')}</p></div></div>`;
-  }
+  /* ====== Tableau de bord ====== */
   function renderDashboard() {
-    const e = state.expertises, n = state.notes, r = state.reports;
+    const s = state.service, n = state.notes, r = state.reports;
     const stat = (c, ic, num, l, go) => `<div class="stat-card" ${go ? `data-go="${go}" style="cursor:pointer"` : ''}><div class="stat-ic" style="background:${c}">${ic}</div><div><b>${num}</b><span>${l}</span></div></div>`;
+    const pole = s
+      ? `<div class="panel"><div class="panel-head"><h3>Mon pôle : ${esc(s.name)}</h3>
+          <div class="form-actions"><a class="btn btn-ghost btn-sm" href="service.html?p=${esc(s.slug)}" target="_blank" rel="noopener">Voir la page publique ↗</a>
+            <button class="btn btn-primary btn-sm" data-go="service">Gérer ma page</button></div></div>
+          <p style="color:var(--muted)">${esc(s.description || "Ajoutez une description, des prestations et des réalisations à votre page service.")}</p></div>`
+      : `<div class="panel"><div class="empty">${IC.inbox}<p>Aucun pôle ne vous est affecté.<br>Contactez l'administrateur pour qu'il vous affecte un pôle.</p></div></div>`;
     return `
       <div class="stats-row" style="grid-template-columns:repeat(3,1fr);max-width:820px">
-        ${stat('#1B2A63', IC.star, e.length, 'Expertises', 'expertises')}
+        ${stat('#1B2A63', IC.star, s ? (s.prestations.length + s.realisations.length) : 0, 'Éléments de ma page', s ? 'service' : null)}
         ${stat('#F47920', IC.note, n.length, 'Notes', 'notes')}
         ${stat('#2563C9', IC.report, r.length, 'Rapports', 'rapports')}
       </div>
-      <div class="panel"><div class="panel-head"><h3>Aperçu des expertises</h3><button class="btn btn-primary btn-sm" data-go="ajouter">+ Ajouter</button></div>
-        ${e.length ? `<div class="exp-grid">${e.slice(0, 6).map(x => expCard(x, true)).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune expertise. Cliquez sur « Ajouter ».</p></div>`}</div>`;
+      ${pole}`;
   }
-  function renderExpertises() {
-    const e = state.expertises;
-    return `<div class="panel"><div class="panel-head"><h3>Liste des expertises (${e.length})</h3>
-        <div class="form-actions"><input class="search" id="expSearch" type="search" placeholder="Rechercher…" /><button class="btn btn-primary btn-sm" data-go="ajouter">+ Ajouter</button></div></div>
-      ${e.length ? `<div class="exp-grid">${e.map(x => expCard(x, false)).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune expertise. Ajoutez la première.</p></div>`}</div>`;
-  }
-  function renderAjouter() {
-    const ed = editingExp ? state.expertises.find(x => x.id === editingExp) : null;
-    pendingFile = null; pendingURL = ed ? (ed.photo || '') : '';
-    return `<div class="panel" style="max-width:760px">
-        <div class="panel-head"><h3>${ed ? "✏️ Modifier l'expertise" : '➕ Ajouter une expertise'}</h3>${ed ? '<span class="sub">' + esc(ed.name) + '</span>' : ''}</div>
-        <form id="expForm">
+
+  /* ====== Ma page service (édition du pôle affecté) ====== */
+  function renderService() {
+    const s = state.service;
+    if (!s) return `<div class="panel"><div class="empty">${IC.inbox}<p>Aucun pôle ne vous est affecté.<br>Contactez l'administrateur.</p></div></div>`;
+    pendingFile = null; pendingURL = s.photo || ''; pendingRealFile = null;
+    const edP = editPres ? s.prestations.find(p => p.id === editPres) : null;
+    const edR = editReal ? s.realisations.find(r => r.id === editReal) : null;
+    return `
+      <div class="panel" style="max-width:860px">
+        <div class="panel-head"><h3>Ma page : ${esc(s.name)}</h3>
+          <a class="btn btn-ghost btn-sm" href="service.html?p=${esc(s.slug)}" target="_blank" rel="noopener">Voir en ligne ↗</a></div>
+        <form id="poleForm">
+          <div class="field"><label>Slogan</label><input id="pTagline" value="${esc(s.tagline || '')}" placeholder="Ex. Construire l'avenir, durablement" /></div>
+          <div class="field"><label>Description du pôle</label><textarea id="pDesc" rows="5" placeholder="Présentez votre domaine…">${esc(s.description || '')}</textarea></div>
           <div class="form-row">
-            <div class="field"><label>Nom *</label><input id="eName" required value="${ed ? esc(ed.name) : ''}" placeholder="Ex. BTP…" /></div>
-            <div class="field"><label>Couleur (fond par défaut)</label><input id="eColor" type="color" value="${ed ? (ed.color || '#1B2A63') : '#1B2A63'}" /></div>
+            <div class="field"><label>Couleur</label><input id="pColor" type="color" value="${s.color || '#1B2A63'}" /></div>
+            <div class="field"><label>Photo / visuel du pôle</label>
+              <div class="photo-row"><div class="photo-preview" id="ePreview"></div><div class="photo-controls"><input id="pPhoto" type="file" accept="image/*" /></div></div></div>
           </div>
-          <div class="field"><label>Description</label><textarea id="eDesc" placeholder="Décrivez ce domaine…">${ed ? esc(ed.description || '') : ''}</textarea></div>
-          <div class="field"><label>Photo de l'expertise</label>
-            <div class="photo-row"><div class="photo-preview" id="ePreview"></div>
-              <div class="photo-controls"><input id="ePhoto" type="file" accept="image/*" /></div></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">💾 Enregistrer la présentation</button></div>
+        </form>
+      </div>
+
+      <div class="panel" style="max-width:860px">
+        <div class="panel-head"><h3>Prestations (${s.prestations.length})</h3></div>
+        <form id="presForm" class="form-row" style="align-items:flex-end">
+          <div class="field" style="flex:1"><label>Titre *</label><input id="presTitle" required value="${edP ? esc(edP.title) : ''}" placeholder="Ex. Gros œuvre" /></div>
+          <div class="field" style="flex:2"><label>Description</label><input id="presDesc" value="${edP ? esc(edP.description || '') : ''}" placeholder="Courte description" /></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${edP ? '💾' : '+ Ajouter'}</button>${edP ? '<button class="btn btn-ghost" type="button" id="presCancel">Annuler</button>' : ''}</div>
+        </form>
+        ${s.prestations.length ? `<div class="report-list" style="margin-top:16px">${s.prestations.map(presRow).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune prestation.</p></div>`}
+      </div>
+
+      <div class="panel" style="max-width:860px">
+        <div class="panel-head"><h3>Réalisations (${s.realisations.length})</h3></div>
+        <form id="realForm">
+          <div class="form-row">
+            <div class="field"><label>Titre *</label><input id="realTitle" required value="${edR ? esc(edR.title) : ''}" placeholder="Ex. Résidence Les Palmiers" /></div>
+            <div class="field"><label>Lieu</label><input id="realLieu" value="${edR ? esc(edR.lieu || '') : ''}" placeholder="Ex. Douala" /></div>
           </div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : "+ Ajouter l'expertise"}</button>
-            <button class="btn btn-ghost" type="button" id="cancelEdit">Annuler</button></div>
-        </form></div>`;
+          <div class="form-row">
+            <div class="field"><label>Année</label><input id="realYear" value="${edR ? esc(edR.year || '') : ''}" placeholder="Ex. 2024" /></div>
+            <div class="field"><label>Photo ${edR ? '(remplacer)' : ''}</label><input id="realPhoto" type="file" accept="image/*" /></div>
+          </div>
+          <div class="field"><label>Description</label><textarea id="realDesc" rows="3" placeholder="Décrivez la réalisation…">${edR ? esc(edR.description || '') : ''}</textarea></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${edR ? '💾 Enregistrer' : '+ Ajouter la réalisation'}</button>${edR ? '<button class="btn btn-ghost" type="button" id="realCancel">Annuler</button>' : ''}</div>
+        </form>
+        ${s.realisations.length ? `<div class="exp-grid" style="margin-top:18px">${s.realisations.map(realCard).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune réalisation.</p></div>`}
+      </div>`;
+  }
+  function presRow(p) {
+    return `<div class="report-card"><div class="report-info"><h4>${esc(p.title)}</h4><p>${esc(p.description || '')}</p></div>
+      <div class="report-actions"><button class="btn-icon edit" data-epres="${p.id}" title="Modifier">${IC.pencil}</button><button class="btn-icon" data-dpres="${p.id}" title="Supprimer">${IC.trash}</button></div></div>`;
+  }
+  function realCard(r) {
+    const top = r.photo ? `<div class="exp-top has-photo"><img src="${r.photo}" alt="${esc(r.title)}"></div>` : `<div class="exp-top" style="background:${state.service.color || '#1B2A63'}"><span class="exp-ic">🏗️</span></div>`;
+    return `<div class="exp-card"><div class="exp-actions"><button class="btn-icon edit" data-ereal="${r.id}" title="Modifier">${IC.pencil}</button><button class="btn-icon" data-dreal="${r.id}" title="Supprimer">${IC.trash}</button></div>${top}
+      <div class="exp-body"><h4>${esc(r.title)}</h4><p>${esc(r.description || '')}</p><div class="mini" style="margin-top:6px">${r.lieu ? '📍 ' + esc(r.lieu) + (r.year ? ' · ' : '') : ''}${esc(r.year || '')}</div></div></div>`;
   }
   function renderPreview() {
     const p = $('ePreview'); if (!p) return;
     if (pendingURL) { p.innerHTML = `<img src="${pendingURL}" alt="">`; p.style.background = ''; }
-    else { p.innerHTML = '<span>Aucune photo</span>'; p.style.background = ($('eColor') ? $('eColor').value : '#1B2A63'); }
+    else { p.innerHTML = '<span>Aucune photo</span>'; p.style.background = ($('pColor') ? $('pColor').value : '#1B2A63'); }
   }
 
   /* ====== Notes ====== */
@@ -202,34 +234,62 @@
 
   /* ====== Événements ====== */
   function bindView(name) {
-    viewEl.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { if (b.dataset.go === 'ajouter') editingExp = null; setView(b.dataset.go); }));
+    viewEl.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => setView(b.dataset.go)));
 
-    if (name === 'ajouter') {
+    if (name === 'service' && state.service) {
+      const sid = state.service.id;
+      // Présentation du pôle
       renderPreview();
-      $('eColor').addEventListener('input', () => { if (!pendingURL) renderPreview(); });
-      $('ePhoto').addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; pendingFile = f; pendingURL = URL.createObjectURL(f); renderPreview(); });
-      $('expForm').addEventListener('submit', async (e) => {
+      const pc = $('pColor'); if (pc) pc.addEventListener('input', () => { if (!pendingFile) renderPreview(); });
+      const pp = $('pPhoto'); if (pp) pp.addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; pendingFile = f; pendingURL = URL.createObjectURL(f); renderPreview(); });
+      $('poleForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const nm = $('eName').value.trim(); if (!nm) return;
         const fd = new FormData();
-        fd.append('name', nm); fd.append('description', $('eDesc').value.trim()); fd.append('color', $('eColor').value);
+        fd.append('tagline', $('pTagline').value.trim());
+        fd.append('description', $('pDesc').value.trim());
+        fd.append('color', $('pColor').value);
         if (pendingFile) fd.append('photo', pendingFile);
+        try { await API.patchForm('/expertises/' + sid + '/', fd); toast('Présentation enregistrée ✓'); await setView('service'); }
+        catch (err) { alert(err.message); }
+      });
+      // Prestations
+      $('presForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); const t = $('presTitle').value.trim(); if (!t) return;
+        const body = { expertise: sid, title: t, description: $('presDesc').value.trim() };
         try {
-          if (editingExp) { await API.patchForm('/expertises/' + editingExp + '/', fd); editingExp = null; toast('Expertise mise à jour ✓'); }
-          else { await API.postForm('/expertises/', fd); toast('Expertise ajoutée ✓'); }
-          await setView('expertises');
+          if (editPres) { await API.patch('/prestations/' + editPres + '/', body); editPres = null; toast('Prestation modifiée ✓'); }
+          else { await API.post('/prestations/', body); toast('Prestation ajoutée ✓'); }
+          await setView('service');
         } catch (err) { alert(err.message); }
       });
-      $('cancelEdit').addEventListener('click', () => { editingExp = null; setView('expertises'); });
-    }
-
-    if (name === 'expertises') {
-      viewEl.querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => { editingExp = +b.dataset.edit; setView('ajouter'); }));
-      viewEl.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
-        if (!confirm('Supprimer cette expertise ?')) return;
-        await API.del('/expertises/' + b.dataset.del + '/'); toast('Supprimée'); await setView('expertises');
+      const presC = $('presCancel'); if (presC) presC.addEventListener('click', () => { editPres = null; setView('service'); });
+      viewEl.querySelectorAll('[data-epres]').forEach(b => b.addEventListener('click', () => { editPres = +b.dataset.epres; setView('service'); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+      viewEl.querySelectorAll('[data-dpres]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette prestation ?')) return;
+        await API.del('/prestations/' + b.dataset.dpres + '/'); if (editPres === +b.dataset.dpres) editPres = null; toast('Supprimée'); await setView('service');
       }));
-      filterCards('expSearch', '.exp-card');
+      // Réalisations
+      const rp = $('realPhoto'); if (rp) rp.addEventListener('change', (e) => { pendingRealFile = e.target.files[0] || null; });
+      $('realForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); const t = $('realTitle').value.trim(); if (!t) return;
+        const fd = new FormData();
+        fd.append('expertise', sid); fd.append('title', t);
+        fd.append('description', $('realDesc').value.trim());
+        fd.append('lieu', $('realLieu').value.trim());
+        fd.append('year', $('realYear').value.trim());
+        if (pendingRealFile) fd.append('photo', pendingRealFile);
+        try {
+          if (editReal) { await API.patchForm('/realisations/' + editReal + '/', fd); editReal = null; toast('Réalisation modifiée ✓'); }
+          else { await API.postForm('/realisations/', fd); toast('Réalisation ajoutée ✓'); }
+          await setView('service');
+        } catch (err) { alert(err.message); }
+      });
+      const realC = $('realCancel'); if (realC) realC.addEventListener('click', () => { editReal = null; setView('service'); });
+      viewEl.querySelectorAll('[data-ereal]').forEach(b => b.addEventListener('click', () => { editReal = +b.dataset.ereal; setView('service'); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+      viewEl.querySelectorAll('[data-dreal]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette réalisation ?')) return;
+        await API.del('/realisations/' + b.dataset.dreal + '/'); if (editReal === +b.dataset.dreal) editReal = null; toast('Supprimée'); await setView('service');
+      }));
     }
 
     if (name === 'notes') {

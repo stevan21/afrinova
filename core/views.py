@@ -6,14 +6,24 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from .models import Member, Expertise, Note, Report, Message, Devis
+from .models import Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis
 from .serializers import (
-    MemberSerializer, ExpertiseSerializer, NoteSerializer, ReportSerializer,
-    MessageSerializer, DevisSerializer, UserSerializer,
+    MemberSerializer, ExpertiseSerializer, ExpertiseDetailSerializer,
+    PrestationSerializer, RealisationSerializer,
+    NoteSerializer, ReportSerializer, MessageSerializer, DevisSerializer, UserSerializer,
 )
+
+
+def user_can_edit_expertise(user, expertise):
+    """Admin, ou l'expert affecté à ce pôle."""
+    if user and user.is_staff:
+        return True
+    member = getattr(user, "member", None)
+    return bool(member and expertise and member.expertise_id == expertise.id)
 
 
 # ===================== Authentification =====================
@@ -69,9 +79,16 @@ class MemberViewSet(viewsets.ModelViewSet):
             pole=(data.get("pole") or ""),
             phone=(data.get("phone") or ""),
         )
+        exp_id = data.get("expertise")
+        if exp_id:
+            exp = Expertise.objects.filter(pk=exp_id).first()
+            if exp:
+                member.expertise = exp
+                if not data.get("pole"):
+                    member.pole = exp.name
         if data.get("photo"):
             member.photo = data.get("photo")
-            member.save()
+        member.save()
         return Response(MemberSerializer(member, context={"request": request}).data, status=201)
 
     def update(self, request, *args, **kwargs):
@@ -87,6 +104,12 @@ class MemberViewSet(viewsets.ModelViewSet):
         for f in ("poste", "pole", "phone"):
             if f in data:
                 setattr(member, f, data.get(f) or "")
+        if "expertise" in data:
+            exp_id = data.get("expertise")
+            exp = Expertise.objects.filter(pk=exp_id).first() if exp_id else None
+            member.expertise = exp
+            if exp:
+                member.pole = exp.name
         if data.get("photo"):
             member.photo = data.get("photo")
         member.save()
@@ -98,7 +121,7 @@ class MemberViewSet(viewsets.ModelViewSet):
         user.delete()
 
 
-# ===================== Expertises =====================
+# ===================== Expertises (pôles / pages service) =====================
 class ExpertiseViewSet(viewsets.ModelViewSet):
     queryset = Expertise.objects.all()
     serializer_class = ExpertiseSerializer
@@ -106,10 +129,82 @@ class ExpertiseViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ("list", "retrieve"):
             return [AllowAny()]
-        return [IsAuthenticated()]
+        if self.action in ("create", "destroy"):
+            return [IsAdminUser()]            # seul l'admin crée/supprime un pôle
+        return [IsAuthenticated()]            # update : vérifié ci-dessous (admin ou expert affecté)
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user if self.request.user.is_authenticated else None)
+
+    def update(self, request, *args, **kwargs):
+        expertise = self.get_object()
+        if not user_can_edit_expertise(request.user, expertise):
+            raise PermissionDenied("Vous ne gérez pas ce pôle.")
+        return super().update(request, *args, **kwargs)
+
+
+# Détail public d'un service (par slug) : description + prestations + réalisations
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def service_detail(request, slug):
+    try:
+        exp = Expertise.objects.get(slug=slug)
+    except Expertise.DoesNotExist:
+        return Response({"detail": "Service introuvable."}, status=404)
+    return Response(ExpertiseDetailSerializer(exp, context={"request": request}).data)
+
+
+# La page service de l'expert connecté (son pôle affecté)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_service(request):
+    member = getattr(request.user, "member", None)
+    exp = member.expertise if member else None
+    if not exp:
+        return Response({"detail": "Aucun pôle affecté."}, status=404)
+    return Response(ExpertiseDetailSerializer(exp, context={"request": request}).data)
+
+
+class _PoleScopedViewSet(viewsets.ModelViewSet):
+    """CRUD limité au pôle de l'expert (ou tout pour l'admin)."""
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = self.model.objects.all()
+        user = self.request.user
+        exp_id = self.request.query_params.get("expertise")
+        if exp_id:
+            qs = qs.filter(expertise_id=exp_id)
+        if not user.is_staff:
+            member = getattr(user, "member", None)
+            qs = qs.filter(expertise=member.expertise) if (member and member.expertise_id) else qs.none()
+        return qs
+
+    def _check(self, expertise):
+        if not user_can_edit_expertise(self.request.user, expertise):
+            raise PermissionDenied("Vous ne gérez pas ce pôle.")
+
+    def perform_create(self, serializer):
+        self._check(serializer.validated_data.get("expertise"))
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self._check(serializer.instance.expertise)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check(instance.expertise)
+        instance.delete()
+
+
+class PrestationViewSet(_PoleScopedViewSet):
+    model = Prestation
+    serializer_class = PrestationSerializer
+
+
+class RealisationViewSet(_PoleScopedViewSet):
+    model = Realisation
+    serializer_class = RealisationSerializer
 
 
 # ===================== Notes (personnelles) =====================

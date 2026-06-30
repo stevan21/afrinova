@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils.text import slugify
 
 
 class Member(models.Model):
@@ -7,6 +8,8 @@ class Member(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="member")
     poste = models.CharField(max_length=120, blank=True, default="Chef de projet")
     pole = models.CharField(max_length=120, blank=True, default="")
+    # Pôle (page service) géré par ce chef de projet
+    expertise = models.ForeignKey("Expertise", on_delete=models.SET_NULL, null=True, blank=True, related_name="managers")
     phone = models.CharField(max_length=40, blank=True, default="")
     photo = models.ImageField(upload_to="membres/", blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -24,7 +27,10 @@ class Member(models.Model):
 
 
 class Expertise(models.Model):
+    """Un pôle / service. Sa page de détail est gérée par l'expert affecté."""
     name = models.CharField(max_length=120)
+    slug = models.SlugField(max_length=140, unique=True, null=True, blank=True)
+    tagline = models.CharField(max_length=200, blank=True, default="")
     description = models.TextField(blank=True, default="")
     color = models.CharField(max_length=20, blank=True, default="#1B2A63")
     photo = models.ImageField(upload_to="expertises/", blank=True, null=True)
@@ -35,8 +41,50 @@ class Expertise(models.Model):
     class Meta:
         ordering = ["-updated"]
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base = slugify(self.name) or "pole"
+            slug = base
+            i = 2
+            while Expertise.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base}-{i}"
+                i += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
+
+
+class Prestation(models.Model):
+    """Service proposé, affiché sur la page de détail du pôle."""
+    expertise = models.ForeignKey(Expertise, on_delete=models.CASCADE, related_name="prestations")
+    title = models.CharField(max_length=160)
+    description = models.TextField(blank=True, default="")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return self.title
+
+
+class Realisation(models.Model):
+    """Travail réalisé, affiché sur la page de détail du pôle."""
+    expertise = models.ForeignKey(Expertise, on_delete=models.CASCADE, related_name="realisations")
+    title = models.CharField(max_length=160)
+    description = models.TextField(blank=True, default="")
+    lieu = models.CharField(max_length=120, blank=True, default="")
+    year = models.CharField(max_length=20, blank=True, default="")
+    photo = models.ImageField(upload_to="realisations/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "-id"]
+
+    def __str__(self):
+        return self.title
 
 
 class Note(models.Model):

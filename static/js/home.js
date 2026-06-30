@@ -15,7 +15,8 @@
 
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-  const SLUG = {
+  // Associe un nom de pôle à une icône SVG prédéfinie (sinon photo / initiale)
+  const ICON_KEY = {
     'btp': 'btp', 'informatique': 'informatique', 'sante numerique': 'sante',
     'immigration': 'immigration', 'echange de devises': 'devises',
     'location de voitures': 'location', 'multiservices': 'multiservices'
@@ -23,18 +24,18 @@
   const DATA = window.AFRINOVA_SERVICES || {};
   const arrow = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
-  function iconHtml(x, slug) {
+  function iconHtml(x) {
     if (x.photo) return `<div class="service-icon photo"><img src="${x.photo}" alt="${esc(x.name)}"></div>`;
-    if (slug && DATA[slug] && DATA[slug].icon) return `<div class="service-icon">${DATA[slug].icon}</div>`;
+    const key = ICON_KEY[norm(x.name)];
+    if (key && DATA[key] && DATA[key].icon) return `<div class="service-icon">${DATA[key].icon}</div>`;
     const letter = x.name ? x.name.trim()[0].toUpperCase() : '★';
     return `<div class="service-icon"><span class="ic-letter">${esc(letter)}</span></div>`;
   }
 
   const cards = exps.map((x) => {
-    const slug = SLUG[norm(x.name)] || null;
-    const href = slug ? `service.html?p=${slug}` : '#contact';
+    const href = x.slug ? `service.html?p=${x.slug}` : '#contact';
     return `<a class="service-card service-link reveal in" href="${href}" style="--c:${x.color || '#1B2A63'}">
-      ${iconHtml(x, slug)}
+      ${iconHtml(x)}
       <h3>${esc(x.name)}</h3>
       <p>${esc(x.description || '')}</p>
       <span class="service-more">Voir le détail ${arrow}</span>

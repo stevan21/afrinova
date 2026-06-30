@@ -58,7 +58,7 @@
   }
   async function ensureData(name) {
     if (name === 'dashboard') { const [d, m, r] = await Promise.all([API.get('/devis/'), API.get('/members/'), API.get('/reports/')]); state.devis = d; state.members = m; state.reports = r; }
-    else if (name === 'chefs') state.members = await API.get('/members/');
+    else if (name === 'chefs') { const [m, e] = await Promise.all([API.get('/members/'), API.get('/expertises/')]); state.members = m; state.expertises = e; }
     else if (name === 'expertises') state.expertises = await API.get('/expertises/');
     else if (name === 'rapports') state.reports = await API.get('/reports/');
     else if (name === 'devis') state.devis = await API.get('/devis/');
@@ -119,7 +119,10 @@
                  <div class="field"><label>Mot de passe *</label><input id="cPass" required placeholder="••••••" /></div>`}
           </div>
           <div class="form-row">
-            <div class="field"><label>Pôle</label><select id="cPole">${POLES.map(p => `<option${ed && ed.pole === p ? ' selected' : ''}>${p}</option>`).join('')}</select></div>
+            <div class="field"><label>Pôle géré (page service)</label><select id="cExp">
+              <option value="">— Aucun pôle —</option>
+              ${(state.expertises || []).map(e => `<option value="${e.id}"${ed && ed.expertise === e.id ? ' selected' : ''}>${esc(e.name)}</option>`).join('')}
+            </select></div>
             <div class="field"><label>Téléphone</label><input id="cPhone" value="${ed ? esc(ed.phone || '') : ''}" placeholder="+237 6XX XX XX XX" /></div>
           </div>
           <div class="form-row">
@@ -320,7 +323,7 @@
         const fd = new FormData();
         fd.append('name', $('cName').value.trim());
         fd.append('poste', $('cPoste').value.trim());
-        fd.append('pole', $('cPole').value);
+        fd.append('expertise', $('cExp').value);
         fd.append('phone', $('cPhone').value.trim());
         fd.append('email', $('cEmail').value.trim());
         if ($('cPhoto').files[0]) fd.append('photo', $('cPhoto').files[0]);
