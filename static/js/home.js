@@ -19,7 +19,8 @@
   const ICON_KEY = {
     'btp': 'btp', 'informatique': 'informatique', 'sante numerique': 'sante',
     'immigration': 'immigration', 'echange de devises': 'devises',
-    'location de voitures': 'location', 'multiservices': 'multiservices'
+    'location de voitures': 'location', 'multiservices': 'multiservices',
+    'entretien & nettoyage': 'entretien'
   };
   const DATA = window.AFRINOVA_SERVICES || {};
   const arrow = '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';

@@ -102,7 +102,7 @@
   function renderChefs() {
     const chefs = state.members;
     const ed = editingChef ? chefs.find(c => c.id === editingChef) : null;
-    const POLES = ['Direction', 'BTP', 'Informatique', 'Santé numérique', 'Immigration', 'Échange de devises', 'Location de voitures', 'Multiservices', 'Autre'];
+    const POLES = ['Direction', 'BTP', 'Informatique', 'Santé numérique', 'Immigration', 'Échange de devises', 'Location de voitures', 'Multiservices', 'Entretien & Nettoyage', 'Autre'];
     return `
       <div class="panel">
         <div class="panel-head"><h3>${ed ? '✏️ Modifier le chef de projet' : 'Ajouter un chef de projet'}</h3><span class="sub">${ed ? esc(ed.name) : 'Crée aussi son compte de connexion'}</span></div>

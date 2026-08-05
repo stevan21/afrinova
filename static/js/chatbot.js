@@ -24,7 +24,8 @@
     { slug: 'immigration',   name: 'Immigration',          kw: ['immigration', 'visa', 'etude', 'etudier', 'etranger', 'voyage', 'travail a', 'sejour', 'installation', 'canada', 'france', 'europe'] },
     { slug: 'devises',       name: 'Échange de devises',   kw: ['devise', 'change', 'transfert', 'argent', 'monnaie', 'euro', 'dollar', 'financier', 'finance'] },
     { slug: 'location',      name: 'Location de voitures', kw: ['location', 'voiture', 'vehicule', 'auto', 'chauffeur', 'transfert aeroport', 'deplacement', 'taxi'] },
-    { slug: 'multiservices', name: 'Multiservices',        kw: ['multiservice', 'multi service', 'conciergerie', 'externalisation', 'plusieurs', 'divers'] }
+    { slug: 'multiservices', name: 'Multiservices',        kw: ['multiservice', 'multi service', 'conciergerie', 'externalisation', 'plusieurs', 'divers'] },
+    { slug: 'entretien-nettoyage', name: 'Entretien & Nettoyage', kw: ['entretien', 'nettoyage', 'nettoyer', 'menage', 'proprete', 'propre', 'maintenance', 'jardinage', 'jardin', 'espaces verts', 'elagage', 'vitrerie', 'repassage', 'femme de menage', 'plomberie', 'climatisation'] }
   ];
   const svcHref = (slug) => `${HOME}service.html?p=${slug}`;
 

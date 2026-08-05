@@ -11,6 +11,7 @@ EXPERTISES = [
     ("Échange de devises", "Change multi-devises, transfert et conseil financier.", "#1B8A6B"),
     ("Location de voitures", "Courte/longue durée, avec ou sans chauffeur.", "#2563C9"),
     ("Multiservices", "Solutions intégrées et sur mesure, clés en main.", "#243375"),
+    ("Entretien & Nettoyage", "Nettoyage professionnel, maintenance technique, espaces verts et entretien à domicile.", "#0E9AA7"),
 ]
 
 

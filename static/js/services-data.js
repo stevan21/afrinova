@@ -214,5 +214,34 @@ window.AFRINOVA_SERVICES = {
       { t: "Externalisation de services", d: "Délégation de services support pour une entreprise.", lieu: "Douala", annee: "2024" }
     ],
     atouts: ["Un seul interlocuteur", "Solutions intégrées", "Flexibilité totale", "Gain de temps"]
+  },
+
+  /* ------------------------------------------------- Entretien & Nettoyage */
+  entretien: {
+    name: "Entretien & Nettoyage",
+    color: "#0E9AA7",
+    tagline: "Des espaces propres et fonctionnels, toute l'année.",
+    icon: '<svg viewBox="0 0 24 24" fill="none"><path d="M11 2.5h3.5v3H11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10.5 5.5h4.5A2.5 2.5 0 0 1 17.5 8v11a2.5 2.5 0 0 1-2.5 2.5h-4.5A2.5 2.5 0 0 1 8 19V8a2.5 2.5 0 0 1 2.5-2.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10.8 10.5h3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M7.5 3.2 5.6 4M7.5 5.6H5.4M7.5 8 5.6 8.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+    intro: [
+      "Le pôle Entretien & Nettoyage prend soin de vos locaux, de vos équipements et de vos extérieurs. Bureaux, commerces, résidences ou fin de chantier : nos équipes interviennent ponctuellement ou selon un contrat régulier.",
+      "Au-delà du nettoyage, nous assurons la maintenance technique du quotidien et l'entretien des espaces verts, pour des lieux toujours prêts à accueillir."
+    ],
+    stats: [
+      { n: "4", l: "domaines couverts" },
+      { n: "7j/7", l: "interventions possibles" },
+      { n: "100%", l: "équipes formées" }
+    ],
+    prestations: [
+      { t: "Nettoyage professionnel", d: "Bureaux, locaux commerciaux, fin de chantier et vitrerie." },
+      { t: "Maintenance technique", d: "Plomberie, électricité, climatisation et petites réparations." },
+      { t: "Espaces verts", d: "Jardinage, élagage et aménagement des extérieurs." },
+      { t: "Entretien à domicile", d: "Ménage, repassage et aide au quotidien pour les particuliers." }
+    ],
+    realisations: [
+      { t: "Entretien de bureaux", d: "Contrat de nettoyage régulier pour un plateau de bureaux.", lieu: "Yaoundé", annee: "2024" },
+      { t: "Nettoyage fin de chantier", d: "Remise en état complète après travaux de construction.", lieu: "Obili", annee: "2024" },
+      { t: "Aménagement d'espaces verts", d: "Entretien et élagage du jardin d'une résidence privée.", lieu: "Douala", annee: "2023" }
+    ],
+    atouts: ["Équipes formées", "Produits adaptés", "Interventions planifiées", "Discrétion assurée"]
   }
 };
