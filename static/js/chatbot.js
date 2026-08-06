@@ -10,7 +10,7 @@
   const TEL1 = '+237 659 23 22 92';
   const TEL2 = '+237 652 76 97 09';
   const WA = 'https://wa.me/237659232292?text=' + encodeURIComponent("Bonjour AFRINOVA, je souhaite des informations.");
-  const EMAIL = 'contact@afrinova.com';
+  const EMAIL = 'service@afrinovagroupe.com';
   const ADRESSE = 'Obili, Yaoundé — Cameroun';
 
   /* ----- index.html et service.html sont dans le même dossier : chemins relatifs simples ----- */
