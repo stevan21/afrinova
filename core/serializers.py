@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis
+from .models import (Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis,
+                     Vehicule, VehiculePhoto, Reservation)
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -72,6 +73,41 @@ class DevisSerializer(serializers.ModelSerializer):
         model = Devis
         fields = ["id", "name", "email", "phone", "service", "message", "status", "created"]
         read_only_fields = ["created"]
+
+
+class VehiculePhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehiculePhoto
+        fields = ["id", "vehicule", "image", "order"]
+
+
+class VehiculeSerializer(serializers.ModelSerializer):
+    photos = VehiculePhotoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Vehicule
+        fields = ["id", "expertise", "name", "year",
+                  "price_ville", "price_hors_ville", "remise", "available",
+                  "photo", "photos", "description", "order"]
+
+
+class ReservationSerializer(serializers.ModelSerializer):
+    vehicule_name = serializers.CharField(source="vehicule.name", read_only=True, default="")
+    zone_label = serializers.CharField(source="get_zone_display", read_only=True)
+
+    class Meta:
+        model = Reservation
+        fields = ["id", "vehicule", "vehicule_name", "name", "email", "phone",
+                  "date_debut", "date_fin", "zone", "zone_label", "avec_chauffeur",
+                  "message", "status", "created"]
+        read_only_fields = ["created"]
+
+    def validate(self, attrs):
+        debut, fin = attrs.get("date_debut"), attrs.get("date_fin")
+        if debut and fin and fin < debut:
+            raise serializers.ValidationError(
+                {"date_fin": "La date de fin doit suivre la date de début."})
+        return attrs
 
 
 class UserSerializer(serializers.ModelSerializer):

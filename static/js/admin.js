@@ -18,8 +18,10 @@
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
 
   const loginScreen = $('login'), appScreen = $('app'), viewEl = $('view'), titleEl = $('viewTitle');
-  const state = { me: null, members: [], expertises: [], devis: [], reports: [], messages: [] };
+  const state = { me: null, members: [], expertises: [], devis: [], reports: [], messages: [], vehicules: [], reservations: [] };
   let current = 'dashboard', devisFilter = 'all', chatId = null, editingChef = null;
+  let editingVeh = null, resaFilter = 'all';
+  const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR') + ' FCFA';
 
   /* ====== Toast ====== */
   let toastT;
@@ -42,8 +44,8 @@
   $('logout').addEventListener('click', async () => { await API.logout(); API.setToken(null); state.me = null; showLogin(); });
 
   /* ====== Navigation SPA ====== */
-  const TITLES = { dashboard: 'Tableau de bord', chefs: 'Chefs de projet', expertises: 'Expertises', rapports: 'Rapports', devis: 'Devis', messages: 'Messages' };
-  const RENDER = { dashboard: renderDashboard, chefs: renderChefs, expertises: renderExpertises, rapports: renderRapports, devis: renderDevis, messages: renderMessages };
+  const TITLES = { dashboard: 'Tableau de bord', chefs: 'Chefs de projet', expertises: 'Expertises', rapports: 'Rapports', devis: 'Devis', location: 'Parc de véhicules', reservations: 'Réservations', messages: 'Messages' };
+  const RENDER = { dashboard: renderDashboard, chefs: renderChefs, expertises: renderExpertises, rapports: renderRapports, devis: renderDevis, location: renderLocation, reservations: renderReservations, messages: renderMessages };
 
   async function setView(name) {
     current = name;
@@ -62,6 +64,8 @@
     else if (name === 'expertises') state.expertises = await API.get('/expertises/');
     else if (name === 'rapports') state.reports = await API.get('/reports/');
     else if (name === 'devis') state.devis = await API.get('/devis/');
+    else if (name === 'location') { const [v, e] = await Promise.all([API.get('/vehicules/'), API.get('/expertises/')]); state.vehicules = v; state.expertises = e; }
+    else if (name === 'reservations') { const [r, v] = await Promise.all([API.get('/reservations/'), API.get('/vehicules/')]); state.reservations = r; state.vehicules = v; }
     else if (name === 'messages') { const [m, msg] = await Promise.all([API.get('/members/'), API.get('/messages/')]); state.members = m; state.messages = msg; }
   }
   $('sideNav').addEventListener('click', (e) => { const b = e.target.closest('button[data-view]'); if (b) { editingChef = null; setView(b.dataset.view); } });
@@ -277,6 +281,113 @@
     a.click(); URL.revokeObjectURL(a.href); toast('Export CSV téléchargé ✓');
   }
 
+  /* ====== Vue : Parc de véhicules ====== */
+  function renderLocation() {
+    const vehs = state.vehicules;
+    const ed = editingVeh ? vehs.find(v => v.id === editingVeh) : null;
+    // Pôle proposé par défaut : celui qui parle de location
+    const poleLoc = (state.expertises || []).find(e => norm(e.name).includes('location'));
+    const expId = ed ? ed.expertise : (poleLoc ? poleLoc.id : '');
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>${ed ? '✏️ Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
+          <span class="sub">${ed ? esc(ed.name) : 'Il apparaîtra sur la page Location du site'}</span></div>
+        <form id="vehForm">
+          <div class="form-row">
+            <div class="field"><label>Nom du véhicule *</label><input id="vName" required value="${ed ? esc(ed.name) : ''}" placeholder="Ex. Toyota Corolla" /></div>
+            <div class="field"><label>Année</label><input id="vYear" value="${ed ? esc(ed.year || '') : ''}" placeholder="Ex. 2021" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Prix en ville / jour (FCFA)</label><input id="vVille" type="number" min="0" value="${ed ? ed.price_ville : 0}" /></div>
+            <div class="field"><label>Prix hors ville / jour (FCFA)</label><input id="vHorsVille" type="number" min="0" value="${ed ? ed.price_hors_ville : 0}" /></div>
+          </div>
+          <div class="field"><label>Remise sur plusieurs jours</label>
+            <input id="vRemise" maxlength="200" value="${ed ? esc(ed.remise || '') : ''}" placeholder="Ex. Remise à partir de 3 jours, nous consulter" />
+            <span class="hint">Texte affiché tel quel au client. Laissez vide s'il n'y a pas de remise.</span></div>
+          <div class="form-row">
+            <div class="field"><label>Pôle</label><select id="vExp">
+              ${(state.expertises || []).map(e => `<option value="${e.id}"${e.id === expId ? ' selected' : ''}>${esc(e.name)}</option>`).join('')}
+            </select></div>
+            <div class="field"><label>Disponibilité</label><select id="vAvail">
+              <option value="1"${!ed || ed.available ? ' selected' : ''}>Disponible</option>
+              <option value="0"${ed && !ed.available ? ' selected' : ''}>Indisponible (loué)</option>
+            </select></div>
+          </div>
+          <div class="field"><label>Description</label><textarea id="vDesc" placeholder="Boîte automatique, 5 places, climatisation…">${ed ? esc(ed.description || '') : ''}</textarea></div>
+          <div class="form-row">
+            <div class="field"><label>Photo principale ${ed ? '(remplacer)' : ''}</label><input id="vPhoto" type="file" accept="image/*" /></div>
+            <div class="field"><label>Photos supplémentaires (plusieurs)</label><input id="vPhotos" type="file" accept="image/*" multiple /></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Ajouter le véhicule'}</button>
+            ${ed ? '<button class="btn btn-ghost" type="button" id="vehCancel">Annuler</button>' : ''}
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Parc (${vehs.length})</h3>
+          <a class="btn btn-ghost btn-sm" href="location.html" target="_blank" rel="noopener">Voir la page Location ↗</a></div>
+        ${vehs.length ? `<div class="chefs-grid">${vehs.map(vehCard).join('')}</div>` : emptyBox('Aucun véhicule dans le parc.')}
+      </div>`;
+  }
+  function vehCard(v) {
+    const pics = (v.photo ? 1 : 0) + (v.photos || []).length;
+    const cover = v.photo ? `<img src="${v.photo}" alt="${esc(v.name)}">`
+      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : '🚗');
+    return `<div class="chef-card">
+      <button class="btn-icon chef-edit" data-edit-veh="${v.id}" title="Modifier">${IC.pencil}</button>
+      <button class="btn-icon chef-del" data-del-veh="${v.id}" title="Supprimer">${IC.trash}</button>
+      <div class="chef-ava" style="background:#2563C9;border-radius:12px">${cover}</div>
+      <h4>${esc(v.name)}</h4>
+      <span class="chef-pole">${v.available ? 'Disponible' : 'Indisponible'}${v.year ? ' · ' + esc(v.year) : ''}</span>
+      <div class="chef-info">
+        ${v.price_ville ? 'Ville : ' + fcfa(v.price_ville) + ' / jour<br>' : 'Ville : sur demande<br>'}
+        ${v.price_hors_ville ? 'Hors ville : ' + fcfa(v.price_hors_ville) + ' / jour<br>' : 'Hors ville : sur demande<br>'}
+        ${v.remise ? `<span class="mini">🏷 ${esc(v.remise)}</span><br>` : ''}
+        <span class="mini">${pics} photo${pics > 1 ? 's' : ''}</span>
+        ${(v.photos || []).length ? `<br>${v.photos.map(p => `<button class="btn-icon" data-del-photo="${p.id}" title="Supprimer cette photo">${IC.trash}</button>`).join('')}` : ''}
+      </div>
+    </div>`;
+  }
+
+  /* ====== Vue : Réservations ====== */
+  function renderReservations() {
+    let list = state.reservations;
+    if (resaFilter !== 'all') list = list.filter(r => (r.status || 'nouvelle') === resaFilter);
+    const ST = ['nouvelle', 'confirmée', 'terminée', 'annulée'];
+    return `
+      <div class="panel">
+        <div class="toolbar">
+          <select class="status-select" id="resaFilterSel">
+            <option value="all">Tous les statuts</option>
+            ${ST.map(s => `<option value="${s}">${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}
+          </select><span class="grow"></span>
+        </div>
+        ${list.length ? `<div class="table-wrap"><table>
+          <thead><tr><th>Reçue le</th><th>Client</th><th>Contact</th><th>Véhicule</th><th>Période</th><th>Trajet</th><th>Chauffeur</th><th>Message</th><th>Statut</th><th></th></tr></thead>
+          <tbody>${list.map(resaRow).join('')}</tbody></table></div>`
+        : emptyBox('Aucune réservation ' + (resaFilter !== 'all' ? 'avec ce statut.' : 'pour le moment.'))}
+      </div>`;
+  }
+  function resaRow(r) {
+    const st = r.status || 'nouvelle';
+    const ST = ['nouvelle', 'confirmée', 'terminée', 'annulée'];
+    const periode = (r.date_debut ? fmtDay(r.date_debut) : '?') + ' → ' + (r.date_fin ? fmtDay(r.date_fin) : '?');
+    return `<tr>
+      <td class="mini">${fmtDate(r.created)}</td>
+      <td class="cell-strong">${esc(r.name)}</td>
+      <td class="mini">${r.email ? `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a><br>` : ''}${r.phone ? esc(r.phone) : ''}</td>
+      <td>${esc(r.vehicule_name || 'À conseiller')}</td>
+      <td class="mini">${periode}</td>
+      <td class="mini">${esc(r.zone_label || '')}</td>
+      <td>${r.avec_chauffeur ? 'Oui' : 'Non'}</td>
+      <td class="cell-msg">${esc(r.message || '')}</td>
+      <td><select class="status-select" data-resa-status="${r.id}">
+        ${ST.map(s => `<option value="${s}"${s === st ? ' selected' : ''}>${s}</option>`).join('')}</select></td>
+      <td><button class="btn-icon" data-del-resa="${r.id}" title="Supprimer">${IC.trash}</button></td>
+    </tr>`;
+  }
+
   /* ====== Vue : Messages ====== */
   function memberAva(c, s) { const inner = c.photo ? `<img src="${c.photo}" alt="">` : esc(initials(c.name)); return `<span class="m-ava" style="width:${s}px;height:${s}px;background:${avaColor(c.name)}">${inner}</span>`; }
   function renderMessages() {
@@ -385,6 +496,64 @@
         await API.del('/devis/' + b.dataset.delDevis + '/'); toast('Devis supprimé'); await setView('devis');
       }));
       $('exportCsv').addEventListener('click', exportCsv);
+    }
+
+    if (name === 'location') {
+      $('vehForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData();
+        fd.append('name', $('vName').value.trim());
+        fd.append('year', $('vYear').value.trim());
+        fd.append('expertise', $('vExp').value);
+        fd.append('price_ville', $('vVille').value || 0);
+        fd.append('price_hors_ville', $('vHorsVille').value || 0);
+        fd.append('remise', $('vRemise').value.trim());
+        fd.append('available', $('vAvail').value === '1' ? 'true' : 'false');
+        fd.append('description', $('vDesc').value.trim());
+        if ($('vPhoto').files[0]) fd.append('photo', $('vPhoto').files[0]);
+        try {
+          let veh;
+          if (editingVeh) { veh = await API.patchForm('/vehicules/' + editingVeh + '/', fd); toast('Véhicule mis à jour ✓'); }
+          else { veh = await API.postForm('/vehicules/', fd); toast('Véhicule ajouté ✓'); }
+          // Photos supplémentaires : un envoi par fichier
+          const extra = $('vPhotos').files;
+          for (let i = 0; i < extra.length; i++) {
+            const pf = new FormData();
+            pf.append('vehicule', veh.id);
+            pf.append('image', extra[i]);
+            pf.append('order', i);
+            await API.postForm('/vehicule-photos/', pf);
+          }
+          editingVeh = null;
+          await setView('location');
+        } catch (err) { alert(err.message); }
+      });
+      const vc = $('vehCancel'); if (vc) vc.addEventListener('click', () => { editingVeh = null; setView('location'); });
+      viewEl.querySelectorAll('[data-edit-veh]').forEach(b => b.addEventListener('click', () => {
+        editingVeh = +b.dataset.editVeh; setView('location'); window.scrollTo({ top: 0, behavior: 'smooth' });
+      }));
+      viewEl.querySelectorAll('[data-del-veh]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer ce véhicule et ses photos ?')) return;
+        if (editingVeh === +b.dataset.delVeh) editingVeh = null;
+        await API.del('/vehicules/' + b.dataset.delVeh + '/'); toast('Véhicule supprimé'); await setView('location');
+      }));
+      viewEl.querySelectorAll('[data-del-photo]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette photo ?')) return;
+        await API.del('/vehicule-photos/' + b.dataset.delPhoto + '/'); toast('Photo supprimée'); await setView('location');
+      }));
+    }
+
+    if (name === 'reservations') {
+      const f = $('resaFilterSel'); f.value = resaFilter;
+      f.addEventListener('change', () => { resaFilter = f.value; setView('reservations'); });
+      viewEl.querySelectorAll('[data-resa-status]').forEach(sel => sel.addEventListener('change', async () => {
+        await API.patch('/reservations/' + sel.dataset.resaStatus + '/', { status: sel.value });
+        toast('Statut mis à jour'); await setView('reservations');
+      }));
+      viewEl.querySelectorAll('[data-del-resa]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette réservation ?')) return;
+        await API.del('/reservations/' + b.dataset.delResa + '/'); toast('Réservation supprimée'); await setView('reservations');
+      }));
     }
 
     if (name === 'messages') {

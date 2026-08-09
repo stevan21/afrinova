@@ -11,6 +11,9 @@ router.register("messages", views.MessageViewSet, basename="message")
 router.register("devis", views.DevisViewSet, basename="devis")
 router.register("prestations", views.PrestationViewSet, basename="prestation")
 router.register("realisations", views.RealisationViewSet, basename="realisation")
+router.register("vehicules", views.VehiculeViewSet, basename="vehicule")
+router.register("vehicule-photos", views.VehiculePhotoViewSet, basename="vehicule-photo")
+router.register("reservations", views.ReservationViewSet, basename="reservation")
 
 urlpatterns = [
     path("auth/login", views.login_view),

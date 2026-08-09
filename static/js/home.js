@@ -33,8 +33,11 @@
     return `<div class="service-icon"><span class="ic-letter">${esc(letter)}</span></div>`;
   }
 
+  // Le pôle location a sa propre page (catalogue + réservation) au lieu de la page service générique.
+  const isLocation = (x) => /location|vehicule|voiture/.test(norm(x.name));
+
   const cards = exps.map((x) => {
-    const href = x.slug ? `service.html?p=${x.slug}` : '#contact';
+    const href = isLocation(x) ? 'location.html' : (x.slug ? `service.html?p=${x.slug}` : '#contact');
     return `<a class="service-card service-link reveal in" href="${href}" style="--c:${x.color || '#1B2A63'}">
       ${iconHtml(x)}
       <h3>${esc(x.name)}</h3>

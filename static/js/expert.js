@@ -17,11 +17,15 @@
   const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   const snippet = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n) + '…' : s; };
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
+  const emptyBox = (msg) => `<div class="empty">${IC.inbox}<p>${esc(msg)}</p></div>`;
 
   const loginScreen = $('login'), appScreen = $('app'), viewEl = $('view'), titleEl = $('viewTitle');
-  const state = { me: null, service: null, notes: [], reports: [], members: [], messages: [] };
+  const state = { me: null, service: null, notes: [], reports: [], members: [], messages: [], vehicules: [], reservations: [] };
   let pendingFile = null, pendingURL = '', editNote = null, editReport = null, chatId = null;
   let editPres = null, editReal = null, pendingRealFile = null;
+  let editingVeh = null;
+  const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR') + ' FCFA';
+  const myExpId = () => (state.me && state.me.member && state.me.member.expertise) || null;
 
   /* ====== Toast ====== */
   let toastT;
@@ -29,7 +33,11 @@
 
   /* ====== Auth ====== */
   function showLogin() { appScreen.hidden = true; loginScreen.hidden = false; }
-  async function enter() { loginScreen.hidden = true; appScreen.hidden = false; await setView('dashboard'); }
+  async function enter() {
+    loginScreen.hidden = true; appScreen.hidden = false;
+    await refreshLocationTabs();
+    await setView('dashboard');
+  }
   $('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault(); $('loginErr').hidden = true;
     try { const res = await API.login($('loginUser').value.trim(), $('loginCode').value); API.setToken(res.token); state.me = res.user; await enter(); }
@@ -38,8 +46,8 @@
   $('logout').addEventListener('click', async () => { await API.logout(); API.setToken(null); state.me = null; showLogin(); });
 
   /* ====== Navigation SPA ====== */
-  const TITLES = { dashboard: 'Tableau de bord', service: 'Ma page service', notes: 'Notes', rapports: 'Rapports', messages: 'Messages' };
-  const RENDER = { dashboard: renderDashboard, service: renderService, notes: renderNotes, rapports: renderRapports, messages: renderMessages };
+  const TITLES = { dashboard: 'Tableau de bord', service: 'Ma page service', location: 'Mes véhicules', reservations: 'Réservations', notes: 'Notes', rapports: 'Rapports', messages: 'Messages' };
+  const RENDER = { dashboard: renderDashboard, service: renderService, location: renderLocation, reservations: renderReservations, notes: renderNotes, rapports: renderRapports, messages: renderMessages };
 
   async function setView(name) {
     titleEl.textContent = TITLES[name] || '';
@@ -58,6 +66,25 @@
     else if (name === 'notes') state.notes = await API.get('/notes/');
     else if (name === 'rapports') state.reports = await API.get('/reports/');
     else if (name === 'messages') { const [m, msg] = await Promise.all([API.get('/members/'), API.get('/messages/')]); state.members = m; state.messages = msg; }
+    else if (name === 'location') state.vehicules = await API.get('/vehicules/?expertise=' + (myExpId() || 0));
+    else if (name === 'reservations') { const [r, v] = await Promise.all([API.get('/reservations/'), API.get('/vehicules/?expertise=' + (myExpId() || 0))]); state.reservations = r; state.vehicules = v; }
+  }
+
+  /* Les onglets « véhicules » n'ont de sens que pour le pôle qui gère un parc. */
+  async function refreshLocationTabs() {
+    const exp = myExpId();
+    let show = false;
+    if (exp) {
+      const name = norm((state.me.member && state.me.member.expertise_name) || '');
+      show = name.includes('location') || name.includes('vehicule') || name.includes('voiture');
+      if (!show) {
+        // Sinon : on affiche quand même si ce pôle a déjà des véhicules.
+        try { show = (await API.get('/vehicules/?expertise=' + exp)).length > 0; } catch (e) {}
+      }
+    }
+    const a = $('navLocation'), b = $('navReservations');
+    if (a) a.hidden = !show;
+    if (b) b.hidden = !show;
   }
   $('sideNav').addEventListener('click', (e) => { const b = e.target.closest('button[data-view]'); if (b) { editPres = null; editReal = null; setView(b.dataset.view); } });
 
@@ -236,6 +263,58 @@
   function bindView(name) {
     viewEl.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => setView(b.dataset.go)));
 
+    if (name === 'location') {
+      const form = $('vehForm');
+      if (form) form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData();
+        fd.append('name', $('vName').value.trim());
+        fd.append('year', $('vYear').value.trim());
+        fd.append('expertise', myExpId());
+        fd.append('price_ville', $('vVille').value || 0);
+        fd.append('price_hors_ville', $('vHorsVille').value || 0);
+        fd.append('remise', $('vRemise').value.trim());
+        fd.append('available', $('vAvail').value === '1' ? 'true' : 'false');
+        fd.append('description', $('vDesc').value.trim());
+        if ($('vPhoto').files[0]) fd.append('photo', $('vPhoto').files[0]);
+        try {
+          let veh;
+          if (editingVeh) { veh = await API.patchForm('/vehicules/' + editingVeh + '/', fd); toast('Véhicule mis à jour ✓'); }
+          else { veh = await API.postForm('/vehicules/', fd); toast('Véhicule ajouté ✓'); }
+          const extra = $('vPhotos').files;
+          for (let i = 0; i < extra.length; i++) {
+            const pf = new FormData();
+            pf.append('vehicule', veh.id);
+            pf.append('image', extra[i]);
+            pf.append('order', i);
+            await API.postForm('/vehicule-photos/', pf);
+          }
+          editingVeh = null;
+          await setView('location');
+        } catch (err) { alert(err.message); }
+      });
+      const vc = $('vehCancel'); if (vc) vc.addEventListener('click', () => { editingVeh = null; setView('location'); });
+      viewEl.querySelectorAll('[data-edit-veh]').forEach(b => b.addEventListener('click', () => {
+        editingVeh = +b.dataset.editVeh; setView('location'); window.scrollTo({ top: 0, behavior: 'smooth' });
+      }));
+      viewEl.querySelectorAll('[data-del-veh]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer ce véhicule et ses photos ?')) return;
+        if (editingVeh === +b.dataset.delVeh) editingVeh = null;
+        await API.del('/vehicules/' + b.dataset.delVeh + '/'); toast('Véhicule supprimé'); await setView('location');
+      }));
+      viewEl.querySelectorAll('[data-del-photo]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette photo ?')) return;
+        await API.del('/vehicule-photos/' + b.dataset.delPhoto + '/'); toast('Photo supprimée'); await setView('location');
+      }));
+    }
+
+    if (name === 'reservations') {
+      viewEl.querySelectorAll('[data-resa-status]').forEach(sel => sel.addEventListener('change', async () => {
+        await API.patch('/reservations/' + sel.dataset.resaStatus + '/', { status: sel.value });
+        toast('Statut mis à jour'); await setView('reservations');
+      }));
+    }
+
     if (name === 'service' && state.service) {
       const sid = state.service.id;
       // Présentation du pôle
@@ -345,6 +424,100 @@
       const ml = $('msgList'); if (ml) ml.scrollTop = ml.scrollHeight;
     }
   }
+  /* ====== Vue : Mes véhicules ====== */
+  function renderLocation() {
+    const vehs = state.vehicules;
+    const ed = editingVeh ? vehs.find(v => v.id === editingVeh) : null;
+    const exp = myExpId();
+    if (!exp) return `<div class="panel">${emptyBox("Aucun pôle ne vous est affecté. Demandez à l'administrateur.")}</div>`;
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>${ed ? '✏️ Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
+          <span class="sub">${ed ? esc(ed.name) : 'Il apparaîtra sur la page Location du site'}</span></div>
+        <form id="vehForm">
+          <div class="form-row">
+            <div class="field"><label>Nom du véhicule *</label><input id="vName" required value="${ed ? esc(ed.name) : ''}" placeholder="Ex. Toyota Corolla" /></div>
+            <div class="field"><label>Année</label><input id="vYear" value="${ed ? esc(ed.year || '') : ''}" placeholder="Ex. 2021" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Prix en ville / jour (FCFA)</label><input id="vVille" type="number" min="0" value="${ed ? ed.price_ville : 0}" /></div>
+            <div class="field"><label>Prix hors ville / jour (FCFA)</label><input id="vHorsVille" type="number" min="0" value="${ed ? ed.price_hors_ville : 0}" /></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Remise sur plusieurs jours</label>
+              <input id="vRemise" maxlength="200" value="${ed ? esc(ed.remise || '') : ''}" placeholder="Ex. Remise à partir de 3 jours, nous consulter" />
+              <span class="hint">Texte affiché tel quel au client. Laissez vide s'il n'y a pas de remise.</span></div>
+            <div class="field"><label>Disponibilité</label><select id="vAvail">
+              <option value="1"${!ed || ed.available ? ' selected' : ''}>Disponible</option>
+              <option value="0"${ed && !ed.available ? ' selected' : ''}>Indisponible (loué)</option>
+            </select></div>
+          </div>
+          <div class="field"><label>Description</label><textarea id="vDesc" placeholder="Boîte automatique, 5 places, climatisation…">${ed ? esc(ed.description || '') : ''}</textarea></div>
+          <div class="form-row">
+            <div class="field"><label>Photo principale ${ed ? '(remplacer)' : ''}</label><input id="vPhoto" type="file" accept="image/*" /></div>
+            <div class="field"><label>Photos supplémentaires (plusieurs)</label><input id="vPhotos" type="file" accept="image/*" multiple /></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Ajouter le véhicule'}</button>
+            ${ed ? '<button class="btn btn-ghost" type="button" id="vehCancel">Annuler</button>' : ''}
+          </div>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Mon parc (${vehs.length})</h3>
+          <a class="btn btn-ghost btn-sm" href="location.html" target="_blank" rel="noopener">Voir la page ↗</a></div>
+        ${vehs.length ? `<div class="chefs-grid">${vehs.map(vehCard).join('')}</div>` : emptyBox('Aucun véhicule pour le moment.')}
+      </div>`;
+  }
+  function vehCard(v) {
+    const pics = (v.photo ? 1 : 0) + (v.photos || []).length;
+    const cover = v.photo ? `<img src="${v.photo}" alt="${esc(v.name)}">`
+      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : '🚗');
+    return `<div class="chef-card">
+      <button class="btn-icon chef-edit" data-edit-veh="${v.id}" title="Modifier">${IC.pencil}</button>
+      <button class="btn-icon chef-del" data-del-veh="${v.id}" title="Supprimer">${IC.trash}</button>
+      <div class="chef-ava" style="background:#2563C9;border-radius:12px">${cover}</div>
+      <h4>${esc(v.name)}</h4>
+      <span class="chef-pole">${v.available ? 'Disponible' : 'Indisponible'}${v.year ? ' · ' + esc(v.year) : ''}</span>
+      <div class="chef-info">
+        ${v.price_ville ? 'Ville : ' + fcfa(v.price_ville) + ' / jour<br>' : 'Ville : sur demande<br>'}
+        ${v.price_hors_ville ? 'Hors ville : ' + fcfa(v.price_hors_ville) + ' / jour<br>' : 'Hors ville : sur demande<br>'}
+        ${v.remise ? `<span class="mini">🏷 ${esc(v.remise)}</span><br>` : ''}
+        <span class="mini">${pics} photo${pics > 1 ? 's' : ''}</span>
+        ${(v.photos || []).length ? `<br>${v.photos.map(p => `<button class="btn-icon" data-del-photo="${p.id}" title="Supprimer cette photo">${IC.trash}</button>`).join('')}` : ''}
+      </div>
+    </div>`;
+  }
+
+  /* ====== Vue : Réservations (celles de mon pôle) ====== */
+  function renderReservations() {
+    const list = state.reservations;
+    const ST = ['nouvelle', 'confirmée', 'terminée', 'annulée'];
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>Demandes reçues (${list.length})</h3>
+          <span class="sub">Les réservations portant sur vos véhicules</span></div>
+        ${list.length ? `<div class="table-wrap"><table>
+          <thead><tr><th>Reçue le</th><th>Client</th><th>Contact</th><th>Véhicule</th><th>Période</th><th>Trajet</th><th>Chauffeur</th><th>Message</th><th>Statut</th></tr></thead>
+          <tbody>${list.map(r => {
+            const st = r.status || 'nouvelle';
+            const periode = (r.date_debut ? fmtDay(r.date_debut) : '?') + ' → ' + (r.date_fin ? fmtDay(r.date_fin) : '?');
+            return `<tr>
+              <td class="mini">${fmtDate(r.created)}</td>
+              <td class="cell-strong">${esc(r.name)}</td>
+              <td class="mini">${r.email ? `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a><br>` : ''}${r.phone ? esc(r.phone) : ''}</td>
+              <td>${esc(r.vehicule_name || 'À conseiller')}</td>
+              <td class="mini">${periode}</td>
+              <td class="mini">${esc(r.zone_label || '')}</td>
+              <td>${r.avec_chauffeur ? 'Oui' : 'Non'}</td>
+              <td class="cell-msg">${esc(r.message || '')}</td>
+              <td><select class="status-select" data-resa-status="${r.id}">
+                ${ST.map(s => `<option value="${s}"${s === st ? ' selected' : ''}>${s}</option>`).join('')}</select></td>
+            </tr>`;
+          }).join('')}</tbody></table></div>` : emptyBox('Aucune réservation pour le moment.')}
+      </div>`;
+  }
+
   function filterCards(searchId, sel) {
     const s = $(searchId); if (!s) return;
     s.addEventListener('input', () => { const q = norm(s.value); viewEl.querySelectorAll(sel).forEach(c => { c.style.display = c.dataset.k.includes(q) ? '' : 'none'; }); });

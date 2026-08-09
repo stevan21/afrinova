@@ -10,11 +10,13 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
-from .models import Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis
+from .models import (Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis,
+                     Vehicule, VehiculePhoto, Reservation)
 from .serializers import (
     MemberSerializer, ExpertiseSerializer, ExpertiseDetailSerializer,
     PrestationSerializer, RealisationSerializer,
     NoteSerializer, ReportSerializer, MessageSerializer, DevisSerializer, UserSerializer,
+    VehiculeSerializer, VehiculePhotoSerializer, ReservationSerializer,
 )
 
 
@@ -259,6 +261,115 @@ class DevisViewSet(viewsets.ModelViewSet):
         return [IsAdminUser()]
 
 
+# ===================== Location de véhicules =====================
+class VehiculeViewSet(viewsets.ModelViewSet):
+    """Catalogue public en lecture ; écriture réservée à l'admin et à l'expert du pôle."""
+    serializer_class = VehiculeSerializer
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = Vehicule.objects.prefetch_related("photos").select_related("expertise")
+        exp_id = self.request.query_params.get("expertise")
+        if exp_id:
+            qs = qs.filter(expertise_id=exp_id)
+        # Le public ne voit que les véhicules disponibles ; les gestionnaires voient tout.
+        user = self.request.user
+        if self.action == "list" and not (user.is_authenticated and self._manages_any(user)):
+            qs = qs.filter(available=True)
+        return qs
+
+    @staticmethod
+    def _manages_any(user):
+        if user.is_staff:
+            return True
+        member = getattr(user, "member", None)
+        return bool(member and member.expertise_id)
+
+    def _check(self, expertise):
+        if not user_can_edit_expertise(self.request.user, expertise):
+            raise PermissionDenied("Vous ne gérez pas ce pôle.")
+
+    def perform_create(self, serializer):
+        self._check(serializer.validated_data.get("expertise"))
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self._check(serializer.instance.expertise)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check(instance.expertise)
+        instance.delete()
+
+
+class VehiculePhotoViewSet(viewsets.ModelViewSet):
+    """Photos supplémentaires d'un véhicule (galerie)."""
+    serializer_class = VehiculePhotoSerializer
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = VehiculePhoto.objects.select_related("vehicule__expertise")
+        veh_id = self.request.query_params.get("vehicule")
+        return qs.filter(vehicule_id=veh_id) if veh_id else qs
+
+    def _check(self, vehicule):
+        if not user_can_edit_expertise(self.request.user, vehicule.expertise if vehicule else None):
+            raise PermissionDenied("Vous ne gérez pas ce pôle.")
+
+    def perform_create(self, serializer):
+        self._check(serializer.validated_data.get("vehicule"))
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self._check(serializer.instance.vehicule)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check(instance.vehicule)
+        instance.delete()
+
+
+class ReservationViewSet(viewsets.ModelViewSet):
+    """Demande publique ; consultation par l'admin et l'expert du pôle concerné."""
+    serializer_class = ReservationSerializer
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = Reservation.objects.select_related("vehicule__expertise")
+        user = self.request.user
+        if user.is_staff:
+            return qs
+        member = getattr(user, "member", None)
+        if member and member.expertise_id:
+            return qs.filter(vehicule__expertise_id=member.expertise_id)
+        return qs.none()
+
+    def _check(self, instance):
+        if not user_can_edit_expertise(self.request.user,
+                                       instance.vehicule.expertise if instance.vehicule else None):
+            raise PermissionDenied("Vous ne gérez pas ce pôle.")
+
+    def perform_update(self, serializer):
+        self._check(serializer.instance)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check(instance)
+        instance.delete()
+
+
 # ===================== Pages (templates Django) =====================
 def index(request):
     return render(request, "index.html")
@@ -278,3 +389,7 @@ def expert_page(request):
 
 def connexion(request):
     return render(request, "connexion.html")
+
+
+def location(request):
+    return render(request, "location.html")

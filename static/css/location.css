@@ -1,0 +1,310 @@
+/* ===================================================================
+   AFRINOVA — Page « Location de véhicules »
+   Mise en page compacte, façon application mobile.
+   Complète styles.css (variables et composants de base y sont définis).
+   =================================================================== */
+
+:root { --loc: #2563C9; }
+
+/* ------------------------------------------------------- En-tête compact */
+.loc-hero {
+  padding: 108px 0 22px;
+  background: linear-gradient(180deg, var(--bg-alt), var(--bg));
+}
+.loc-hero .crumb { margin-bottom: 12px; }
+.loc-hero h1 {
+  font-family: 'Poppins', sans-serif; font-weight: 800; line-height: 1.15;
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem); margin-bottom: .4rem;
+}
+.loc-lead { color: var(--muted); font-size: .95rem; max-width: 56ch; }
+
+/* ------------------------------------------------------- Filtres : chips collants */
+.loc-filters {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; gap: 8px; padding: 14px 0 16px; margin-bottom: 20px;
+  overflow-x: auto; scrollbar-width: none;
+  background: rgba(255, 255, 255, .92); backdrop-filter: blur(10px);
+}
+.loc-filters::-webkit-scrollbar { display: none; }
+.loc-filters-label {
+  flex: 0 0 auto; align-self: center; margin-right: 2px;
+  color: var(--muted); font-size: .82rem; font-weight: 600;
+}
+.loc-filter {
+  flex: 0 0 auto; padding: .48rem 1rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--white); color: var(--muted);
+  font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: all .2s var(--ease);
+}
+.loc-filter:hover { border-color: var(--loc); color: var(--loc); }
+.loc-filter.is-active { background: var(--loc); border-color: var(--loc); color: #fff; }
+
+/* ------------------------------------------------------- Grille compacte */
+.loc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.loc-empty { grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 0; }
+.loc-help { text-align: center; color: var(--muted); margin-top: 32px; font-size: .9rem; }
+.loc-help a { color: var(--loc); font-weight: 600; }
+
+.loc-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.loc-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+
+.loc-card-media { position: relative; aspect-ratio: 4/3; background: var(--bg-alt); overflow: hidden; cursor: zoom-in; }
+.loc-card-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s var(--ease); }
+.loc-card:hover .loc-card-media img { transform: scale(1.04); }
+/* Illustration par défaut : pas de zoom possible, pas d'effet de survol */
+.loc-card-media img.is-placeholder { cursor: default; }
+.loc-card:hover .loc-card-media img.is-placeholder { transform: none; }
+
+.loc-pill {
+  position: absolute; left: 8px; top: 8px; padding: .22rem .6rem; border-radius: 999px;
+  background: rgba(18, 30, 71, .78); color: #fff; font-size: .68rem; font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.loc-thumbs { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 4px; }
+.loc-thumb {
+  width: 30px; height: 24px; border-radius: 5px; overflow: hidden; border: 2px solid #fff;
+  cursor: pointer; padding: 0; background: none; box-shadow: 0 3px 8px -3px rgba(0, 0, 0, .5);
+}
+.loc-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.loc-thumb-more {
+  display: grid; place-items: center; background: rgba(18, 30, 71, .82); color: #fff;
+  font-size: .62rem; font-weight: 700;
+}
+
+.loc-card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; flex: 1; }
+.loc-card-body h3 {
+  font-family: 'Poppins', sans-serif; font-size: .98rem; font-weight: 700;
+  line-height: 1.25; margin: 0;
+}
+.loc-year { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+
+.loc-prices { margin: 10px 0 12px; }
+.loc-price-main { display: flex; align-items: baseline; gap: .25rem; }
+.loc-price-main strong {
+  font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.02rem; color: var(--loc);
+}
+.loc-price-main span { font-size: .78rem; color: var(--muted); }
+.loc-price-alt { font-size: .74rem; color: var(--muted); margin-top: 2px; }
+/* Remise : texte libre saisi par le gestionnaire, mis en valeur discrètement */
+.loc-remise {
+  display: inline-block; margin-top: 6px; padding: .16rem .5rem; border-radius: 6px;
+  background: rgba(244, 121, 32, .12); color: #b4560f;
+  font-size: .72rem; font-weight: 600; line-height: 1.4;
+}
+
+.loc-card .btn {
+  margin-top: auto; width: 100%; justify-content: center;
+  padding: .58rem 1rem; font-size: .86rem; border-radius: 11px;
+}
+
+/* ------------------------------------------------------- Réservation : feuille glissante */
+.loc-modal {
+  position: fixed; inset: 0; z-index: 70; background: rgba(10, 16, 38, .55);
+  display: grid; padding: 20px; overflow-y: auto;
+  /* « safe » : si la feuille dépasse, son haut reste atteignable au défilement.
+     Les navigateurs qui ignorent le mot-clé retombent sur la première règle. */
+  place-items: center;
+  place-items: safe center;
+}
+.loc-modal[hidden] { display: none; }
+.loc-modal-card {
+  position: relative; width: 100%; max-width: 420px; background: var(--white);
+  border-radius: 20px; padding: 26px 24px 24px; box-shadow: var(--shadow);
+  animation: locPop .26s var(--ease);
+  max-height: calc(100vh - 40px); overflow-y: auto;
+}
+@keyframes locPop { from { opacity: 0; transform: translateY(12px) scale(.97); } }
+/* La feuille peut défiler sur petit écran : pouce discret, collé au bord */
+.loc-modal-card { scrollbar-width: thin; scrollbar-color: #d3dae8 transparent; }
+.loc-modal-card::-webkit-scrollbar { width: 8px; }
+.loc-modal-card::-webkit-scrollbar-thumb {
+  background-color: #d3dae8; border: 2px solid transparent;
+  background-clip: content-box; border-radius: 999px;
+}
+.loc-modal-card::-webkit-scrollbar-thumb:hover { background-color: #b6c1d6; }
+
+/* Poignée : repère visuel de la feuille glissante, inutile sur grand écran */
+.loc-grip { display: none; }
+
+.loc-modal-close {
+  position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border: 0;
+  border-radius: 50%; background: var(--bg-alt); color: var(--muted); cursor: pointer;
+  font-size: .9rem; display: grid; place-items: center; transition: all .2s var(--ease);
+  z-index: 2;
+}
+.loc-modal-close:hover { background: var(--line); color: var(--ink); }
+
+/* --- En-tête : vignette + véhicule choisi --- */
+.resa-head { display: flex; align-items: center; gap: 12px; padding-right: 34px; }
+.resa-thumb {
+  width: 58px; height: 58px; flex: 0 0 auto; border-radius: 12px;
+  object-fit: cover; background: var(--bg-alt);
+}
+.loc-modal-card h2 { font-family: 'Poppins', sans-serif; font-size: 1.15rem; margin-bottom: .1rem; }
+.loc-modal-veh { color: var(--loc); font-weight: 700; font-size: .88rem; line-height: 1.35; }
+.loc-modal-desc { color: var(--muted); font-size: .84rem; margin-top: .9rem; }
+.loc-modal-desc[hidden] { display: none; }
+
+/* --- Blocs du formulaire --- */
+/* min-width : sans cela, la largeur mini d'un fieldset est celle de son contenu
+   et la grille des dates déborde sur les petits écrans. */
+.resa-block { border: 0; margin-top: 1.1rem; min-width: 0; padding: 0; }
+.resa-block legend {
+  font-family: 'Poppins', sans-serif; font-size: .72rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: .55rem; padding: 0;
+}
+.loc-modal .field { margin-bottom: .7rem; }
+.loc-modal .field:last-child { margin-bottom: 0; }
+.loc-modal .field label { font-size: .82rem; }
+.loc-modal .field label .opt { color: var(--muted); font-weight: 500; }
+.loc-modal .field input, .loc-modal .field textarea { padding: .62rem .8rem; font-size: .92rem; }
+.loc-modal .field input:focus, .loc-modal .field textarea:focus {
+  border-color: var(--loc); box-shadow: 0 0 0 4px rgba(37, 99, 201, .12);
+}
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row .field { margin-bottom: 0; }        /* l'écart vient déjà du gap */
+/* Le champ date natif est plus haut que les autres : on aligne les hauteurs */
+.loc-modal input[type="date"] { min-height: 42px; }
+
+/* Indicatif collé au champ : le client ne saisit que la partie locale */
+.input-prefix {
+  display: flex; align-items: center; background: #fbfcff;
+  border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+  transition: border-color .2s, box-shadow .2s;
+}
+.input-prefix > span {
+  padding-left: .8rem; color: var(--muted); font-weight: 600; font-size: .92rem; flex: 0 0 auto;
+}
+.loc-modal .input-prefix input {
+  flex: 1; min-width: 0; border: 0; background: none; padding-left: .45rem;
+}
+.loc-modal .input-prefix input:focus { box-shadow: none; border-color: transparent; }
+.input-prefix:focus-within { border-color: var(--loc); box-shadow: 0 0 0 4px rgba(37, 99, 201, .12); }
+
+/* --- Message d'erreur sous un champ --- */
+.resa-err { color: #dc2626; font-size: .78rem; font-weight: 600; margin-top: .3rem; }
+.resa-err[hidden] { display: none; }
+.resa-hint { color: var(--muted); font-size: .78rem; margin-top: .5rem; }
+.resa-hint[hidden] { display: none; }
+
+/* --- Raccourcis de durée --- */
+.resa-quick { display: flex; gap: 6px; flex-wrap: wrap; margin-top: .7rem; }
+.resa-quick button {
+  flex: 1 1 auto; padding: .34rem .6rem; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--white); color: var(--muted);
+  font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+  transition: all .2s var(--ease);
+}
+.resa-quick button:hover { border-color: var(--loc); color: var(--loc); }
+.resa-quick button.is-on { background: var(--loc); border-color: var(--loc); color: #fff; }
+
+/* --- Récapitulatif : durée et tarif rappelés, jamais de total --- */
+.resa-recap {
+  margin-top: 1.1rem; padding: .75rem .9rem; border-radius: var(--radius-sm);
+  background: var(--bg-alt); font-size: .85rem; color: var(--muted);
+}
+.resa-recap[hidden] { display: none; }
+.resa-recap-line {
+  display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
+}
+.resa-recap-line + .resa-recap-line {
+  margin-top: .35rem; padding-top: .35rem; border-top: 1px dashed var(--line);
+}
+.resa-recap-line strong {
+  font-family: 'Poppins', sans-serif; font-weight: 700; font-size: .92rem;
+  color: var(--loc); text-align: right;
+}
+.resa-remise {
+  margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--line);
+  color: #b4560f; font-size: .78rem; font-weight: 600;
+}
+.resa-remise[hidden] { display: none; }
+
+/* --- Sélecteur segmenté « avec / sans chauffeur » --- */
+.seg {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+  padding: 4px; border-radius: 999px; background: var(--bg-alt);
+}
+.seg button {
+  padding: .44rem .5rem; border: 0; border-radius: 999px; background: none;
+  font: inherit; font-size: .84rem; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .2s var(--ease);
+}
+.seg button:hover:not(:disabled):not(.is-on) { color: var(--ink); }
+.seg button.is-on { background: var(--white); color: var(--loc); box-shadow: var(--shadow-sm); }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* --- Envoi --- */
+.resa-submit { margin-top: 1.3rem; padding: .78rem 1.2rem; font-size: .95rem; }
+.resa-submit svg { width: 19px; height: 19px; flex: 0 0 auto; }
+.resa-legal { margin-top: .6rem; text-align: center; color: var(--muted); font-size: .74rem; }
+.loc-form-note { margin-top: .5rem; text-align: center; font-size: .85rem; }
+.loc-form-note:empty { margin-top: 0; }
+.loc-form-note.is-ok { color: #16a34a; font-weight: 600; }
+.loc-form-note.is-err { color: #dc2626; font-weight: 600; }
+
+/* ------------------------------------------------------- Visionneuse */
+.loc-lightbox {
+  position: fixed; inset: 0; z-index: 80; background: rgba(10, 16, 38, .93);
+  display: grid; place-items: center; padding: 40px;
+}
+.loc-lightbox[hidden] { display: none; }
+.loc-lightbox img { max-width: 92vw; max-height: 82vh; border-radius: var(--radius-sm); }
+.loc-lb-close, .loc-lb-nav {
+  position: absolute; background: rgba(255, 255, 255, .12); color: #fff; border: 0;
+  cursor: pointer; border-radius: 50%; display: grid; place-items: center;
+  transition: background .2s var(--ease);
+}
+.loc-lb-close:hover, .loc-lb-nav:hover { background: rgba(255, 255, 255, .28); }
+.loc-lb-close { top: 20px; right: 22px; width: 42px; height: 42px; font-size: 1.05rem; }
+.loc-lb-nav { top: 50%; transform: translateY(-50%); width: 48px; height: 48px; font-size: 1.9rem; line-height: 1; }
+.loc-lb-prev { left: 20px; }
+.loc-lb-next { right: 20px; }
+.loc-lb-count { position: absolute; bottom: 24px; color: #fff; font-size: .85rem; opacity: .8; }
+
+/* ------------------------------------------------------- Responsive */
+@media (max-width: 900px) {
+  .loc-hero { padding: 96px 0 16px; }
+}
+
+@media (max-width: 640px) {
+  /* Une seule carte par ligne, pleine largeur */
+  .loc-grid { grid-template-columns: 1fr; gap: 14px; }
+  .loc-card { border-radius: 16px; }
+  /* Image moins haute : une carte pleine largeur en 4/3 mangerait tout l'écran */
+  .loc-card-media { aspect-ratio: 16/10; }
+  .loc-card-body { padding: 13px 15px 15px; }
+  .loc-card-body h3 { font-size: 1rem; }
+  .loc-price-main strong { font-size: 1.05rem; }
+  .loc-card .btn { padding: .58rem 1rem; font-size: .86rem; }
+
+  /* Le formulaire remonte du bas de l'écran */
+  .loc-modal { place-items: end center; padding: 0; }
+  .loc-modal-card {
+    max-width: none; border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+    max-height: 92vh; overflow-y: auto; animation: locSheet .28s var(--ease);
+  }
+  @keyframes locSheet { from { transform: translateY(100%); } }
+  .field-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Poignée de la feuille : indique qu'on peut faire défiler / fermer */
+  .loc-grip {
+    display: block; width: 38px; height: 4px; border-radius: 999px;
+    background: var(--line); margin: -6px auto 12px;
+  }
+  .resa-head { padding-right: 40px; }
+  .resa-thumb { width: 52px; height: 52px; }
+  /* Sur iOS, une police < 16px déclenche un zoom automatique à la saisie */
+  .loc-modal .field input, .loc-modal .field textarea { font-size: 16px; }
+  .resa-quick button { font-size: .76rem; padding: .34rem .4rem; }
+
+  .loc-lb-nav { width: 40px; height: 40px; font-size: 1.5rem; }
+  .loc-lb-prev { left: 8px; }
+  .loc-lb-next { right: 8px; }
+}
+

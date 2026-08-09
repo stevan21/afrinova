@@ -23,11 +23,15 @@
     { slug: 'sante',         name: 'Santé numérique',      kw: ['sante', 'medecin', 'medical', 'teleconsultation', 'telemedecine', 'clinique', 'hopital', 'patient', 'soin'] },
     { slug: 'immigration',   name: 'Immigration',          kw: ['immigration', 'visa', 'etude', 'etudier', 'etranger', 'voyage', 'travail a', 'sejour', 'installation', 'canada', 'france', 'europe'] },
     { slug: 'devises',       name: 'Échange de devises',   kw: ['devise', 'change', 'transfert', 'argent', 'monnaie', 'euro', 'dollar', 'financier', 'finance'] },
-    { slug: 'location',      name: 'Location de voitures', kw: ['location', 'voiture', 'vehicule', 'auto', 'chauffeur', 'transfert aeroport', 'deplacement', 'taxi'] },
+    { slug: 'location',      name: 'Location de véhicules', page: 'location.html', kw: ['location', 'voiture', 'vehicule', 'auto', 'chauffeur', 'transfert aeroport', 'deplacement', 'taxi', 'louer', 'reserver un vehicule'] },
     { slug: 'multiservices', name: 'Multiservices',        kw: ['multiservice', 'multi service', 'conciergerie', 'externalisation', 'plusieurs', 'divers'] },
     { slug: 'entretien-nettoyage', name: 'Entretien & Nettoyage', kw: ['entretien', 'nettoyage', 'nettoyer', 'menage', 'proprete', 'propre', 'maintenance', 'jardinage', 'jardin', 'espaces verts', 'elagage', 'vitrerie', 'repassage', 'femme de menage', 'plomberie', 'climatisation'] }
   ];
-  const svcHref = (slug) => `${HOME}service.html?p=${slug}`;
+  // Certains pôles ont leur page dédiée (ex. location) plutôt que la page service générique.
+  const svcHref = (slug) => {
+    const s = SERVICES.find((x) => x.slug === slug);
+    return HOME + (s && s.page ? s.page : `service.html?p=${slug}`);
+  };
 
   /* ----- Style ----- */
   const css = `

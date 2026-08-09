@@ -23,6 +23,24 @@
   --ease:cubic-bezier(.22,.61,.36,1);
 }
 
+/* ---------- Barres de défilement ----------
+   Firefox utilise scrollbar-width/-color ; les navigateurs WebKit
+   (Chrome, Edge, Safari) utilisent les pseudo-éléments ci-dessous.
+   La bordure transparente + background-clip donnent un pouce affiné
+   avec de l'air autour, sans réduire la zone cliquable.               */
+html{scrollbar-width:thin;scrollbar-color:#c3ccdf transparent}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-track{background-color:transparent}
+::-webkit-scrollbar-thumb{
+  background-color:#c3ccdf;
+  border:3px solid transparent;
+  background-clip:content-box;
+  border-radius:999px;
+}
+::-webkit-scrollbar-thumb:hover{background-color:var(--navy-soft)}
+::-webkit-scrollbar-thumb:active{background-color:var(--navy)}
+::-webkit-scrollbar-corner{background-color:transparent}
+
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{

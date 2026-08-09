@@ -87,6 +87,82 @@ class Realisation(models.Model):
         return self.title
 
 
+class Vehicule(models.Model):
+    """Véhicule du parc de location, affiché sur la page /location.html.
+
+    Le tarif dépend du trajet : en ville ou hors ville. Le chauffeur n'est pas
+    une caractéristique du véhicule — c'est le client qui le demande ou non
+    dans le formulaire de réservation.
+    """
+    # Rattaché à un pôle : l'expert de ce pôle peut gérer le parc (comme les prestations).
+    expertise = models.ForeignKey(Expertise, on_delete=models.CASCADE, related_name="vehicules")
+    name = models.CharField("Nom du véhicule", max_length=160)
+    year = models.CharField("Année", max_length=10, blank=True, default="")
+    # Tarifs journaliers en FCFA — 0 signifie « non communiqué »
+    price_ville = models.PositiveIntegerField("Prix en ville / jour", default=0)
+    price_hors_ville = models.PositiveIntegerField("Prix hors ville / jour", default=0)
+    # Texte libre affiché au client : la remise se négocie, elle n'est pas calculée.
+    remise = models.CharField("Remise sur plusieurs jours", max_length=200, blank=True, default="")
+    available = models.BooleanField("Disponible", default=True)
+    photo = models.ImageField("Photo principale", upload_to="vehicules/", blank=True, null=True)
+    description = models.TextField(blank=True, default="")
+    order = models.PositiveIntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["order", "-id"]
+        verbose_name = "Véhicule"
+
+    def __str__(self):
+        return self.name
+
+
+class VehiculePhoto(models.Model):
+    """Photo supplémentaire d'un véhicule (galerie)."""
+    vehicule = models.ForeignKey(Vehicule, on_delete=models.CASCADE, related_name="photos")
+    image = models.ImageField(upload_to="vehicules/")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "id"]
+
+    def __str__(self):
+        return f"Photo {self.vehicule}"
+
+
+class Reservation(models.Model):
+    """Demande de réservation envoyée depuis la page de location."""
+    STATUS = [
+        ("nouvelle", "Nouvelle"),
+        ("confirmée", "Confirmée"),
+        ("terminée", "Terminée"),
+        ("annulée", "Annulée"),
+    ]
+    # Détermine lequel des deux tarifs du véhicule s'applique
+    ZONE = [
+        ("ville", "En ville"),
+        ("hors_ville", "Hors ville"),
+    ]
+    vehicule = models.ForeignKey(Vehicule, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name="reservations")
+    name = models.CharField(max_length=160)
+    email = models.EmailField(blank=True, default="")
+    phone = models.CharField(max_length=40, blank=True, default="")
+    date_debut = models.DateField(null=True, blank=True)
+    date_fin = models.DateField(null=True, blank=True)
+    zone = models.CharField("Trajet", max_length=12, choices=ZONE, default="ville")
+    avec_chauffeur = models.BooleanField(default=False)
+    message = models.TextField(blank=True, default="")
+    status = models.CharField(max_length=20, choices=STATUS, default="nouvelle")
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"{self.name} - {self.vehicule or 'véhicule supprimé'}"
+
+
 class Note(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notes")
     title = models.CharField(max_length=200)
