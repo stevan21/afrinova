@@ -168,8 +168,11 @@
 }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .field-row .field { margin-bottom: 0; }        /* l'écart vient déjà du gap */
+/* Sans cela, un élément de grille ne descend jamais sous la largeur de son
+   contenu — et un champ date natif réclame ~176px. */
+.loc-modal .field { min-width: 0; }
 /* Le champ date natif est plus haut que les autres : on aligne les hauteurs */
-.loc-modal input[type="date"] { min-height: 42px; }
+.loc-modal input[type="date"] { min-height: 42px; min-width: 0; }
 
 /* Indicatif collé au champ : le client ne saisit que la partie locale */
 .input-prefix {
@@ -302,6 +305,16 @@
   /* Sur iOS, une police < 16px déclenche un zoom automatique à la saisie */
   .loc-modal .field input, .loc-modal .field textarea { font-size: 16px; }
   .resa-quick button { font-size: .76rem; padding: .34rem .4rem; }
+}
+
+/* Deux champs date côte à côte réclament ~397px (2 x 176 + gap + marges) :
+   en dessous on les empile, plutôt que de les comprimer jusqu'à rendre la
+   date illisible. Le min-width:0 plus haut sert de filet si la police du
+   champ natif est plus large ailleurs que sur Chrome. */
+@media (max-width: 400px) {
+  .field-row { grid-template-columns: 1fr; gap: 0; }
+  .field-row .field { margin-bottom: .7rem; }
+  .field-row .field:last-child { margin-bottom: 0; }
 
   .loc-lb-nav { width: 40px; height: 40px; font-size: 1.5rem; }
   .loc-lb-prev { left: 8px; }

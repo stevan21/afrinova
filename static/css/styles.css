@@ -49,7 +49,11 @@ body{
   background:var(--bg);
   line-height:1.65;
   -webkit-font-smoothing:antialiased;
+  /* « clip » plutôt que « hidden » : même effet visuel, mais sans créer de
+     conteneur de défilement — sinon position:sticky cesse de fonctionner
+     pour ses descendants (barre de filtres de la page Location). */
   overflow-x:hidden;
+  overflow-x:clip;
 }
 h1,h2,h3,h4{font-family:'Poppins',sans-serif;line-height:1.15;color:var(--navy)}
 a{color:inherit;text-decoration:none}
@@ -272,6 +276,9 @@ ul{list-style:none}
 .footer-brand .brand-name{color:#fff}
 .footer-brand p{margin-top:1rem;font-size:.95rem;color:rgba(255,255,255,.65)}
 .footer-col h4{color:#fff;font-size:1rem;margin-bottom:1rem}
+/* Une adresse e-mail est un mot insécable : sans cela elle impose sa largeur
+   à la colonne de grille et fait déborder la page sur un petit téléphone. */
+.footer-col a,.footer-brand p{overflow-wrap:anywhere}
 .footer-col a{display:block;color:rgba(255,255,255,.7);font-size:.93rem;padding:.3rem 0;transition:color .2s,padding-left .2s}
 .footer-col a:hover{color:var(--orange-soft);padding-left:5px}
 .footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;flex-wrap:wrap;gap:1rem}
@@ -438,8 +445,16 @@ ul{list-style:none}
   .steps{grid-template-columns:repeat(2,1fr)}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .footer-grid{grid-template-columns:1fr 1fr}
+  /* Colonne dépilée : l'emblème occupe toute la largeur, les étiquettes
+     flottantes doivent rentrer dans le cadre au lieu de dépasser à droite. */
+  .about-visual{max-width:380px;margin-inline:auto}
+  .tag-1{left:0}
+  .tag-2{right:0}
+  .tag-3{left:8%}
 }
-@media (max-width:680px){
+/* Le menu horizontal ne tient plus sous ~880px : on bascule sur le burger
+   bien avant le seuil mobile, sinon il déborde de la page. */
+@media (max-width:900px){
   .nav{
     position:fixed;inset:76px 0 auto 0;background:#fff;flex-direction:column;gap:0;
     padding:1rem 24px 1.5rem;border-bottom:1px solid var(--line);box-shadow:var(--shadow);
@@ -450,8 +465,15 @@ ul{list-style:none}
   .nav a:not(.nav-cta)::after{display:none}
   .nav-cta{margin-top:.8rem;justify-content:center}
   .burger{display:flex}
+}
+@media (max-width:680px){
   .services-grid,.steps,.values,.row,.work-grid,.presta-grid{grid-template-columns:1fr}
   .section{padding:70px 0}
   .footer-grid{grid-template-columns:1fr 1fr}
   .footer-bottom{flex-direction:column;text-align:center}
+}
+/* Très petits écrans : deux colonnes de pied de page deviennent illisibles */
+@media (max-width:420px){
+  .footer-grid{grid-template-columns:1fr;gap:28px}
+  .stats-grid{grid-template-columns:1fr}
 }
