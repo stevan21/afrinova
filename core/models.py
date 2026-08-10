@@ -1,6 +1,11 @@
+from io import BytesIO
+from pathlib import Path
+
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.db import models
 from django.utils.text import slugify
+from PIL import Image, ImageOps
 
 
 class Member(models.Model):
@@ -87,6 +92,53 @@ class Realisation(models.Model):
         return self.title
 
 
+def optimiser_photo(champ, cote_max=1200, qualite=80):
+    """Réduit une photo trop lourde avant de l'écrire sur le disque.
+
+    Une photo prise au téléphone pèse souvent 3 à 5 Mo pour 4000 px de large,
+    alors que la plus grande vue du site en affiche 800. Sans cela, le visiteur
+    télécharge l'original entier à chaque carte du catalogue.
+
+    Renvoie un ContentFile prêt à enregistrer, ou None s'il n'y a rien à gagner
+    (image déjà petite, ou fichier illisible — on préfère alors laisser passer
+    l'original plutôt que de refuser l'envoi).
+    """
+    try:
+        image = Image.open(champ)
+        # Les téléphones stockent l'orientation en EXIF plutôt que dans les pixels
+        image = ImageOps.exif_transpose(image)
+        image.load()
+    except Exception:
+        return None
+
+    if image.width <= cote_max and image.height <= cote_max and champ.size <= 350 * 1024:
+        return None
+
+    image.thumbnail((cote_max, cote_max), Image.LANCZOS)
+    if image.mode in ("RGBA", "LA", "P"):
+        # Le JPEG ignore la transparence : on aplatit sur du blanc
+        fond = Image.new("RGB", image.size, (255, 255, 255))
+        rgba = image.convert("RGBA")
+        fond.paste(rgba, mask=rgba.split()[-1])
+        image = fond
+    elif image.mode != "RGB":
+        image = image.convert("RGB")
+
+    tampon = BytesIO()
+    image.save(tampon, format="JPEG", quality=qualite, optimize=True, progressive=True)
+    return ContentFile(tampon.getvalue())
+
+
+def _enregistrer_optimisee(champ):
+    """Remplace le fichier d'un ImageField par sa version allégée, si utile."""
+    # _committed est faux tant que le fichier vient d'être choisi et pas encore stocké
+    if not champ or getattr(champ, "_committed", True):
+        return
+    allegee = optimiser_photo(champ)
+    if allegee:
+        champ.save(Path(champ.name).stem + ".jpg", allegee, save=False)
+
+
 class Vehicule(models.Model):
     """Véhicule du parc de location, affiché sur la page /location.html.
 
@@ -113,6 +165,10 @@ class Vehicule(models.Model):
         ordering = ["order", "-id"]
         verbose_name = "Véhicule"
 
+    def save(self, *args, **kwargs):
+        _enregistrer_optimisee(self.photo)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
@@ -125,6 +181,10 @@ class VehiculePhoto(models.Model):
 
     class Meta:
         ordering = ["order", "id"]
+
+    def save(self, *args, **kwargs):
+        _enregistrer_optimisee(self.image)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Photo {self.vehicule}"

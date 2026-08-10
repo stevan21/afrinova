@@ -109,7 +109,11 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+    # « Manifest » ajoute une empreinte au nom des fichiers (styles.4f2a1b.css).
+    # WhiteNoise peut alors les servir avec un cache d'un an au lieu de 60 s :
+    # une nouvelle version change le nom, donc le navigateur la reprend tout
+    # seul — plus besoin de vider le cache après un déploiement.
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
