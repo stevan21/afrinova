@@ -132,7 +132,8 @@
       <button class="loc-modal-close" id="resaClose" aria-label="Fermer">✕</button>
 
       <header class="resa-head">
-        <img class="resa-thumb" id="resaThumb" src="" alt="" />
+        <!-- Pas de src vide : le navigateur le résoudrait en requête vers la page -->
+        <img class="resa-thumb" id="resaThumb" alt="" />
         <div>
           <h2 id="resaTitle">Réserver</h2>
           <p class="loc-modal-veh" id="resaVeh"></p>
@@ -224,7 +225,7 @@
   <div class="loc-lightbox" id="locLightbox" hidden>
     <button class="loc-lb-close" id="lbClose" aria-label="Fermer">✕</button>
     <button class="loc-lb-nav loc-lb-prev" id="lbPrev" aria-label="Photo précédente">‹</button>
-    <img id="lbImg" src="" alt="" />
+    <img id="lbImg" alt="" />
     <button class="loc-lb-nav loc-lb-next" id="lbNext" aria-label="Photo suivante">›</button>
     <span class="loc-lb-count" id="lbCount"></span>
   </div>
