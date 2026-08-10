@@ -56,10 +56,20 @@
   <!-- ============ PARC ============ -->
   <section class="section" id="parc">
     <div class="container">
-      <div class="loc-filters" id="locFilters" role="group" aria-label="Tarif affiché">
-        <span class="loc-filters-label">Tarif&nbsp;:</span>
-        <button class="loc-filter is-active" data-f="ville">En ville</button>
-        <button class="loc-filter" data-f="hors_ville">Hors ville</button>
+      <div class="loc-toolbar">
+        <div class="loc-search">
+          <svg class="loc-search-ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8" />
+            <path d="m20 20-3.6-3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          <input type="search" id="locSearch" placeholder="Rechercher un véhicule…"
+                 aria-label="Rechercher un véhicule" autocomplete="off" />
+        </div>
+        <div class="loc-filters" id="locFilters" role="group" aria-label="Tarif affiché">
+          <span class="loc-filters-label">Tarif&nbsp;:</span>
+          <button class="loc-filter is-active" data-f="ville">En ville</button>
+          <button class="loc-filter" data-f="hors_ville">Hors ville</button>
+        </div>
       </div>
 
       <div class="loc-grid" id="locGrid">

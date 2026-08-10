@@ -28,12 +28,16 @@
   // Illustration affichée tant qu'un véhicule n'a pas sa propre photo
   const PHOTO_DEFAUT = (document.body.dataset.imgDefaut || '');
 
+  // Recherche insensible à la casse et aux accents (« prado » trouve « Prado »)
+  const norm = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
   const grid = $('locGrid');
   const ZONES = { ville: 'en ville', hors_ville: 'hors ville' };
   const prixZone = (v, z) => (z === 'hors_ville' ? v.price_hors_ville : v.price_ville) || 0;
 
   let vehicules = [];
   let zone = 'ville';                                    // tarif mis en avant sur les cartes
+  let recherche = '';                                    // texte saisi dans la barre
   let selected = null;                                   // véhicule en cours de réservation
 
   /* ---------------- Chargement du parc ---------------- */
@@ -103,11 +107,31 @@
     </article>`;
   }
 
-  function render() {
-    grid.innerHTML = vehicules.length
-      ? vehicules.map(card).join('')
-      : '<p class="loc-empty">Aucun véhicule disponible pour le moment.</p>';
+  // On cherche dans le nom, l'année et la description : « automatique » ou
+  // « 7 places » ramènent le bon véhicule même sans connaître son modèle.
+  function correspond(v, q) {
+    return norm([v.name, v.year, v.description].join(' ')).includes(q);
   }
+
+  function render() {
+    if (!vehicules.length) {
+      grid.innerHTML = '<p class="loc-empty">Aucun véhicule disponible pour le moment.</p>';
+      return;
+    }
+    const q = norm(recherche).trim();
+    const list = q ? vehicules.filter((v) => correspond(v, q)) : vehicules;
+    grid.innerHTML = list.length
+      ? list.map(card).join('')
+      : `<p class="loc-empty">Aucun véhicule ne correspond à «&nbsp;${esc(recherche.trim())}&nbsp;».<br>
+           <button type="button" class="loc-reset" id="locReset">Voir tout le parc</button></p>`;
+  }
+
+  /* ---------------- Recherche ---------------- */
+  // Le parc tient en mémoire : filtrage immédiat, aucun appel réseau.
+  $('locSearch').addEventListener('input', (e) => {
+    recherche = e.target.value;
+    render();
+  });
 
   /* ---------------- Bascule du tarif affiché ---------------- */
   $('locFilters').addEventListener('click', (e) => {
@@ -243,6 +267,15 @@
 
   /* ---------------- Clics dans la grille ---------------- */
   grid.addEventListener('click', (e) => {
+    // « Voir tout le parc » : affiché quand la recherche ne donne rien
+    if (e.target.closest('#locReset')) {
+      $('locSearch').value = '';
+      recherche = '';
+      render();
+      $('locSearch').focus();
+      return;
+    }
+
     const thumb = e.target.closest('.loc-thumb');
     if (thumb) { openLb(thumb.dataset.veh, Number(thumb.dataset.i)); return; }
 
