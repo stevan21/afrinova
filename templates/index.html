@@ -11,9 +11,8 @@
   <link rel="apple-touch-icon" href="{% static 'assets/logo-icon.jpeg' %}" />
   <link rel="mask-icon" href="{% static 'assets/favicon.svg' %}" color="#1B2A63" />
   <meta name="theme-color" content="#1B2A63" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Polices hebergees en local : evite deux origines externes -->
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}" />
   <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
 </head>
 <body>
