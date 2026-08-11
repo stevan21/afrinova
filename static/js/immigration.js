@@ -7,6 +7,7 @@
 (function () {
   'use strict';
   const B = window.AfrinovaBareme;
+  const ICO = window.AfrinovaIcons;
   const API = window.AfrinovaAPI;
   const WHATSAPP = '237659232292';
 
@@ -105,7 +106,7 @@
   function vueDestination() {
     const cartes = Object.entries(B.PAYS).map(([cle, p]) => `
       <button type="button" class="imm-pays" data-pays="${cle}">
-        <span class="imm-pays-drapeau">${p.drapeau}</span>
+        <span class="imm-pays-drapeau">${ICO.drapeau(cle)}</span>
         <span class="imm-pays-nom">${esc(p.nom)}</span>
       </button>`).join('');
     return `
@@ -118,14 +119,14 @@
     const p = B.PAYS[etat.pays];
     const choix = Object.entries(B.MOTIFS).map(([cle, m]) => `
       <button type="button" class="imm-motif" data-motif="${cle}">
-        <span class="imm-motif-icone">${m.icone}</span>
+        <span class="imm-motif-icone">${ICO.icone(m.icone)}</span>
         <span>
           <strong>${esc(m.nom)}</strong>
           <small>Ressources attendues : ${fcfa(enFcfa(p.fonds[cle]))}</small>
         </span>
       </button>`).join('');
     return `
-      <h2>Votre objectif ${p.drapeau} ${esc(p.nom)}</h2>
+      <h2><span class="imm-drapeau-titre">${ICO.drapeau(etat.pays)}</span> ${esc(p.nom)}</h2>
       <p class="imm-sous">${esc(p.remarque)}</p>
       <div class="imm-motifs">${choix}</div>
       <button type="button" class="imm-retour" data-retour="0">← Changer de destination</button>`;
@@ -222,7 +223,11 @@
           <div class="imm-score-chiffre"><strong>${r.score}</strong><span>/100</span></div>
           <div>
             <h2>${esc(r.verdict.titre)}</h2>
-            <p class="imm-score-ou">${m.icone} ${esc(m.nom)} — ${p.drapeau} ${esc(p.nom)}</p>
+            <p class="imm-score-ou">
+              <span class="imm-ico-inline">${ICO.icone(m.icone)}</span>${esc(m.nom)}
+              <span class="imm-sep">—</span>
+              <span class="imm-drapeau-inline">${ICO.drapeau(etat.pays)}</span>${esc(p.nom)}
+            </p>
           </div>
         </div>
         <p class="imm-verdict-txt">${esc(r.verdict.texte)}</p>

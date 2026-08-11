@@ -269,6 +269,7 @@ ul{list-style:none}
 .field textarea{resize:vertical}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .form-note{margin-top:1rem;text-align:center;color:#1AAA5E;font-weight:600}
+.form-note .meta-ico{vertical-align:-3px;margin-right:.15rem}
 
 /* ---------- Footer ---------- */
 .site-footer{background:var(--navy-deep);color:rgba(255,255,255,.8);padding:64px 0 28px}
@@ -332,6 +333,12 @@ ul{list-style:none}
 .work-body h3{font-size:1.1rem;margin-bottom:.5rem}
 .work-body p{color:var(--muted);font-size:.9rem;margin-bottom:1rem;flex:1}
 .work-meta{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--navy);font-weight:600;border-top:1px solid var(--line);padding-top:.8rem}
+/* ---------- Icônes en ligne (remplacent les anciens emojis) ---------- */
+.work-meta span{display:inline-flex;align-items:center;gap:.35rem}
+.meta-ico{width:15px;height:15px;flex:0 0 auto;stroke-width:1.9}
+.tag-ico{width:16px;height:16px;flex:0 0 auto;margin-right:.4rem;vertical-align:-3px;color:var(--orange)}
+.ci-icon svg{width:22px;height:22px;color:var(--navy)}
+.work-emoji .svc-ico{width:46px;height:46px;color:#fff}
 .work-meta span:last-child{color:var(--orange)}
 .work-note{text-align:center;color:var(--muted);font-size:.88rem;margin-top:32px;font-style:italic}
 

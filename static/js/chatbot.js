@@ -67,6 +67,7 @@
   @keyframes afbin{from{opacity:0;transform:translateY(8px)}}
   .afb-bot{background:#fff;color:#16203f;align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 4px 12px -8px rgba(27,42,99,.3)}
   .afb-user{background:var(--n);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .afb-ic{width:15px;height:15px;vertical-align:-3px;margin-right:.15rem;display:inline-block}
   .afb-msg a.afb-link{color:var(--o);font-weight:700;text-decoration:none}
   .afb-msg a.afb-link:hover{text-decoration:underline}
   .afb-bot b{color:var(--n)}
@@ -167,16 +168,16 @@
 
   /* ----- Réponses ----- */
   function contactReply() {
-    return `📞 Vous pouvez nous joindre&nbsp;:<br>
+    return `<svg class="afb-ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.5 3h3l1.5 4-2 1.4a12 12 0 0 0 5.6 5.6L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Vous pouvez nous joindre&nbsp;:<br>
       • Tél&nbsp;: <a class="afb-link" href="tel:+237659232292">${TEL1}</a><br>
       • Tél&nbsp;: <a class="afb-link" href="tel:+237652769709">${TEL2}</a><br>
       • <a class="afb-link" href="${WA}" target="_blank" rel="noopener">Discuter sur WhatsApp</a><br>
       • Email&nbsp;: <a class="afb-link" href="mailto:${EMAIL}">${EMAIL}</a><br>
-      • 📍 ${ADRESSE}`;
+      • <svg class="afb-ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6" stroke="currentColor" stroke-width="1.8"/></svg> ${ADRESSE}`;
   }
   function servicesReply() {
     const list = SERVICES.map(s => '• ' + link(svcHref(s.slug), s.name)).join('<br>');
-    return `Nous réunissons <b>7 pôles d'expertise</b>&nbsp;:<br>${list}<br><br>Cliquez sur un pôle pour voir le détail, ou dites-moi lequel vous intéresse 🙂`;
+    return `Nous réunissons <b>7 pôles d'expertise</b>&nbsp;:<br>${list}<br><br>Cliquez sur un pôle pour voir le détail, ou dites-moi lequel vous intéresse.`;
   }
   function devisReply() {
     return `Pour un <b>devis gratuit</b>, le plus simple&nbsp;:<br>
@@ -200,7 +201,7 @@
       }
     }
     if (has(['bonjour', 'salut', 'bonsoir', 'hello', 'coucou', 'hey', 'cc'])) {
-      return botTyping('Bonjour 👋 Ravi de vous accueillir chez AFRINOVA ! Que puis-je faire pour vous ?', DEFAULT_CHIPS);
+      return botTyping('Bonjour ! Ravi de vous accueillir chez AFRINOVA. Que puis-je faire pour vous ?', DEFAULT_CHIPS);
     }
     if (has(['devis', 'prix', 'tarif', 'cout', 'combien', 'estimation', 'budget'])) {
       return botTyping(devisReply(), ['Nos services', 'Contact']);
@@ -209,7 +210,7 @@
       return botTyping(contactReply(), ['Demander un devis', 'Horaires']);
     }
     if (has(['horaire', 'heure', 'ouvert', 'ouverture', 'ferme', 'quand'])) {
-      return botTyping('🕗 Nous sommes ouverts du <b>lundi au samedi</b>, de <b>8h00 à 19h00</b>.', ['Contact', 'Nos services']);
+      return botTyping('<svg class="afb-ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5.2l3.2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Nous sommes ouverts du <b>lundi au samedi</b>, de <b>8h00 à 19h00</b>.', ['Contact', 'Nos services']);
     }
     if (has(['fondateur', 'directeur', 'patron', 'choudja', 'alain', 'dirigeant', 'createur', 'gerant'])) {
       return botTyping(`Le fondateur & dirigeant d'AFRINOVA est <b>Choudja Alain</b>. ${link(HOME + 'index.html#founder', 'Découvrir son mot →')}`, DEFAULT_CHIPS);
@@ -218,14 +219,14 @@
       return botTyping(servicesReply(), ['Demander un devis', 'Contact']);
     }
     if (has(['merci', 'thanks', 'top', 'parfait', 'super'])) {
-      return botTyping('Avec plaisir 🙏 Je reste disponible si vous avez d\'autres questions !', DEFAULT_CHIPS);
+      return botTyping('Avec plaisir. Je reste disponible si vous avez d\'autres questions !', DEFAULT_CHIPS);
     }
     if (has(['bye', 'au revoir', 'a plus', 'ciao'])) {
-      return botTyping('Merci de votre visite et à bientôt chez AFRINOVA ! 👋', DEFAULT_CHIPS);
+      return botTyping('Merci de votre visite et à bientôt chez AFRINOVA !', DEFAULT_CHIPS);
     }
     // fallback
     return botTyping(
-      `Je n'ai pas tout saisi 🤔 mais je peux vous aider sur&nbsp;:<br>${servicesReply()}<br><br>Ou contactez directement un conseiller&nbsp;: <a class="afb-link" href="${WA}" target="_blank" rel="noopener">WhatsApp</a>.`,
+      `Je n'ai pas tout saisi, mais je peux vous aider sur&nbsp;:<br>${servicesReply()}<br><br>Ou contactez directement un conseiller&nbsp;: <a class="afb-link" href="${WA}" target="_blank" rel="noopener">WhatsApp</a>.`,
       DEFAULT_CHIPS
     );
   }
@@ -238,7 +239,7 @@
     if (t.includes('service')) return botTyping(servicesReply(), ['Demander un devis', 'Contact']);
     if (t.includes('devis')) return botTyping(devisReply(), ['Nos services', 'Contact']);
     if (t.includes('contact')) return botTyping(contactReply(), ['Demander un devis', 'Horaires']);
-    if (t.includes('horaire')) return botTyping('🕗 Nous sommes ouverts du <b>lundi au samedi</b>, de <b>8h00 à 19h00</b>.', ['Contact', 'Nos services']);
+    if (t.includes('horaire')) return botTyping('<svg class="afb-ic" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5.2l3.2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Nous sommes ouverts du <b>lundi au samedi</b>, de <b>8h00 à 19h00</b>.', ['Contact', 'Nos services']);
     if (t.includes('fondateur')) return botTyping(`Le fondateur & dirigeant d'AFRINOVA est <b>Choudja Alain</b>. ${link(HOME + 'index.html#founder', 'Découvrir son mot →')}`, DEFAULT_CHIPS);
     return detect(text);
   }
@@ -252,7 +253,7 @@
       input.focus();
       if (!greeted) {
         greeted = true;
-        botTyping("👋 Bonjour et bienvenue chez <b>AFRINOVA</b> !<br>Je suis votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?", DEFAULT_CHIPS);
+        botTyping("Bonjour et bienvenue chez <b>AFRINOVA</b> !<br>Je suis votre assistant virtuel. Comment puis-je vous aider aujourd'hui ?", DEFAULT_CHIPS);
       }
     }
   }

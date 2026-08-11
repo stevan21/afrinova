@@ -22,44 +22,45 @@ window.AfrinovaBareme = (function () {
                tourisme : pour un séjour d'environ deux semaines)
      langue = langue principale attendue dans le dossier
      ------------------------------------------------------------------ */
+  // La clé de chaque pays sert aussi à retrouver son drapeau dans icons.js
   const PAYS = {
     canada: {
-      nom: 'Canada', drapeau: '🇨🇦', langue: 'les deux',
+      nom: 'Canada', langue: 'les deux',
       fonds: { etude: 14000, travail: 10000, tourisme: 2500 },
       remarque: "Système à points très encadré : les critères sont publics et " +
                 "peu discrétionnaires. Le Québec applique ses propres règles."
     },
     france: {
-      nom: 'France', drapeau: '🇫🇷', langue: 'français',
+      nom: 'France', langue: 'français',
       fonds: { etude: 7400, travail: 6000, tourisme: 1000 },
       remarque: "Passage par Campus France obligatoire pour les études. " +
                 "La cohérence du projet pèse autant que les chiffres."
     },
     belgique: {
-      nom: 'Belgique', drapeau: '🇧🇪', langue: 'français',
+      nom: 'Belgique', langue: 'français',
       fonds: { etude: 8500, travail: 7000, tourisme: 1000 },
       remarque: "Prise en charge financière possible par un garant (annexe 32)."
     },
     allemagne: {
-      nom: 'Allemagne', drapeau: '🇩🇪', langue: 'allemand',
+      nom: 'Allemagne', langue: 'allemand',
       fonds: { etude: 11900, travail: 8000, tourisme: 1200 },
       remarque: "Compte bloqué (Sperrkonto) exigé pour les études. " +
                 "Carte bleue européenne pour les profils qualifiés."
     },
     royaume_uni: {
-      nom: 'Royaume-Uni', drapeau: '🇬🇧', langue: 'anglais',
+      nom: 'Royaume-Uni', langue: 'anglais',
       fonds: { etude: 12000, travail: 9000, tourisme: 2000 },
       remarque: "Système à points. Un sponsor agréé est indispensable " +
                 "pour les études comme pour le travail."
     },
     etats_unis: {
-      nom: 'États-Unis', drapeau: '🇺🇸', langue: 'anglais',
+      nom: 'États-Unis', langue: 'anglais',
       fonds: { etude: 20000, travail: 12000, tourisme: 3000 },
       remarque: "Décision très discrétionnaire, prise en entretien consulaire. " +
                 "Les attaches au pays d'origine sont déterminantes."
     },
     autre_europe: {
-      nom: 'Autre pays d\'Europe', drapeau: '🇪🇺', langue: 'les deux',
+      nom: 'Autre pays d\'Europe', langue: 'les deux',
       fonds: { etude: 9000, travail: 7000, tourisme: 1200 },
       remarque: "Estimation moyenne pour l'espace Schengen. " +
                 "Les seuils varient sensiblement d'un pays à l'autre."
@@ -67,9 +68,9 @@ window.AfrinovaBareme = (function () {
   };
 
   const MOTIFS = {
-    etude: { nom: 'Étudier', icone: '🎓', duree: 'une année d\'études' },
-    travail: { nom: 'Travailler', icone: '💼', duree: 'l\'installation' },
-    tourisme: { nom: 'Tourisme / visite', icone: '✈️', duree: 'le séjour' }
+    etude: { nom: 'Étudier', icone: 'etude', duree: 'une année d\'études' },
+    travail: { nom: 'Travailler', icone: 'travail', duree: 'l\'installation' },
+    tourisme: { nom: 'Tourisme / visite', icone: 'tourisme', duree: 'le séjour' }
   };
 
   /* ------------------------------------------------------------------

@@ -54,7 +54,7 @@
     viewEl.innerHTML = '<div class="empty">Chargement…</div>';
     closeSidebar();
     try { await ensureData(name); }
-    catch (err) { viewEl.innerHTML = `<div class="panel"><div class="empty">⚠️ ${esc(err.message)}</div></div>`; return; }
+    catch (err) { viewEl.innerHTML = `<div class="panel"><div class="empty">${IC.alert} ${esc(err.message)}</div></div>`; return; }
     viewEl.innerHTML = RENDER[name]();
     bindView(name);
   }
@@ -110,7 +110,7 @@
     const POLES = ['Direction', 'BTP', 'Informatique', 'Santé numérique', 'Immigration', 'Échange de devises', 'Location de voitures', 'Multiservices', 'Entretien & Nettoyage', 'Autre'];
     return `
       <div class="panel">
-        <div class="panel-head"><h3>${ed ? '✏️ Modifier le chef de projet' : 'Ajouter un chef de projet'}</h3><span class="sub">${ed ? esc(ed.name) : 'Crée aussi son compte de connexion'}</span></div>
+        <div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier le chef de projet' : 'Ajouter un chef de projet'}</h3><span class="sub">${ed ? esc(ed.name) : 'Crée aussi son compte de connexion'}</span></div>
         <form id="chefForm">
           <div class="form-row">
             <div class="field"><label>Nom complet *</label><input id="cName" required value="${ed ? esc(ed.name) : ''}" placeholder="Ex. Jean Mbarga" /></div>
@@ -135,7 +135,7 @@
             <div class="field"><label>Photo ${ed ? '(remplacer)' : '(optionnelle)'}</label><input id="cPhoto" type="file" accept="image/*" /></div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Ajouter le chef de projet'}</button>
+            <button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Ajouter le chef de projet'}</button>
             ${ed ? '<button class="btn btn-ghost" type="button" id="chefCancel">Annuler</button>' : ''}
           </div>
         </form>
@@ -291,7 +291,7 @@
     const expId = ed ? ed.expertise : (poleLoc ? poleLoc.id : '');
     return `
       <div class="panel">
-        <div class="panel-head"><h3>${ed ? '✏️ Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
+        <div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
           <span class="sub">${ed ? esc(ed.name) : 'Il apparaîtra sur la page Location du site'}</span></div>
         <form id="vehForm">
           <div class="form-row">
@@ -320,7 +320,7 @@
             <div class="field"><label>Photos supplémentaires (plusieurs)</label><input id="vPhotos" type="file" accept="image/*" multiple /></div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Ajouter le véhicule'}</button>
+            <button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Ajouter le véhicule'}</button>
             ${ed ? '<button class="btn btn-ghost" type="button" id="vehCancel">Annuler</button>' : ''}
           </div>
         </form>
@@ -334,7 +334,7 @@
   function vehCard(v) {
     const pics = (v.photo ? 1 : 0) + (v.photos || []).length;
     const cover = v.photo ? `<img src="${v.photo}" alt="${esc(v.name)}">`
-      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : '🚗');
+      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : IC.car);
     return `<div class="chef-card">
       <button class="btn-icon chef-edit" data-edit-veh="${v.id}" title="Modifier">${IC.pencil}</button>
       <button class="btn-icon chef-del" data-del-veh="${v.id}" title="Supprimer">${IC.trash}</button>
@@ -344,7 +344,7 @@
       <div class="chef-info">
         ${v.price_ville ? 'Ville : ' + fcfa(v.price_ville) + ' / jour<br>' : 'Ville : sur demande<br>'}
         ${v.price_hors_ville ? 'Hors ville : ' + fcfa(v.price_hors_ville) + ' / jour<br>' : 'Hors ville : sur demande<br>'}
-        ${v.remise ? `<span class="mini">🏷 ${esc(v.remise)}</span><br>` : ''}
+        ${v.remise ? `<span class="mini">${IC.tag} ${esc(v.remise)}</span><br>` : ''}
         <span class="mini">${pics} photo${pics > 1 ? 's' : ''}</span>
         ${(v.photos || []).length ? `<br>${v.photos.map(p => `<button class="btn-icon" data-del-photo="${p.id}" title="Supprimer cette photo">${IC.trash}</button>`).join('')}` : ''}
       </div>
@@ -424,7 +424,7 @@
         <td><select class="status-select" data-eval-status="${e.id}">
           ${ST.map(s => `<option value="${s}"${s === st ? ' selected' : ''}>${LIB[s]}</option>`).join('')}</select></td>
         <td>
-          <button class="btn-icon" data-eval-detail="${e.id}" title="Voir les réponses">👁</button>
+          <button class="btn-icon" data-eval-detail="${e.id}" title="Voir les réponses">${IC.eye}</button>
           <button class="btn-icon" data-del-eval="${e.id}" title="Supprimer">${IC.trash}</button>
         </td>
       </tr>`;
@@ -481,8 +481,8 @@
     if (c) {
       const conv = msgs.filter(m => (m.sender === me.id && m.recipient === chatId) || (m.sender === chatId && m.recipient === me.id));
       thread = `<div class="thread-head">${memberAva(c, 38)}<div><b>${esc(c.name)}</b><br><span class="mini">${c.pole ? esc(c.pole) : 'Membre'}</span></div></div>
-        <div class="msg-list" id="msgList">${conv.length ? conv.map(m => `<div class="bubble ${m.sender === me.id ? 'sent' : 'recv'}">${nl2br(m.text)}<span class="b-time">${fmtDate(m.created)}</span></div>`).join('') : `<div class="msg-empty mini">Aucun message. Écrivez le premier 👋</div>`}</div>
-        <form class="composer" id="msgForm"><input id="msgInput" placeholder="Votre message…" autocomplete="off" /><button class="msg-send" type="submit">➤</button></form>`;
+        <div class="msg-list" id="msgList">${conv.length ? conv.map(m => `<div class="bubble ${m.sender === me.id ? 'sent' : 'recv'}">${nl2br(m.text)}<span class="b-time">${fmtDate(m.created)}</span></div>`).join('') : `<div class="msg-empty mini">Aucun message. Écrivez le premier</div>`}</div>
+        <form class="composer" id="msgForm"><input id="msgInput" placeholder="Votre message…" autocomplete="off" /><button class="msg-send" type="submit"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M3.4 11.9 20 4l-7.9 16.6-2-6.7-6.7-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button></form>`;
     } else { thread = `<div class="msg-placeholder">${IC.inbox}<p>Sélectionnez un membre à gauche pour discuter.</p></div>`; }
 
     return `<div class="me-bar"><label>Connecté en tant que :</label> <b style="color:var(--navy)">${esc(me.name)}</b></div>
@@ -670,7 +670,16 @@
     trash: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     pencil: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.9l-1.1-1.1a2 2 0 0 0-2.9 0L4 16v4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.4 6.6l4 4" stroke="currentColor" stroke-width="1.7"/></svg>',
     print: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8v-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
-    inbox: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 13l3-8h12l3 8v6H3v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
+    inbox: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 13l3-8h12l3 8v6H3v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    save: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M5 3h11l3 3v15H5V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 3v6h7V3M8 14h8v7H8v-7Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 3.8 2.8 19.4h18.4L12 3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10v4M12 16.8h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    car: '<svg viewBox="0 0 24 24" fill="none" width="34" height="34"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13v5h-2v-2H5v2H3v-5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="16" r="1.2" fill="currentColor"/><circle cx="17" cy="16" r="1.2" fill="currentColor"/></svg>',
+    tag: '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M3 12.6V4.5A1.5 1.5 0 0 1 4.5 3h8.1a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8l-6.6 6.6a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1-.6-1.4Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.8" cy="7.8" r="1.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    memo: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M6 3h12v18H6V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    page: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M6 3h9l4 4v14H6V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3v5h5M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    site: '<svg viewBox="0 0 24 24" fill="none" width="34" height="34"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9h.01M9 13h.01M9 17h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   /* ====== Démarrage ====== */

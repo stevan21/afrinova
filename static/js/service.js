@@ -65,13 +65,13 @@
           <div class="work-cover">
             ${r.photo
           ? `<img src="${r.photo}" alt="${esc(r.title)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`
-          : `<span class="work-emoji" style="font-size:2.2rem">🏗️</span>`}
+          : `<span class="work-emoji"><svg class="svc-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9h.01M9 13h.01M9 17h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`}
             <span class="work-badge">${esc(d.name)}</span>
           </div>
           <div class="work-body">
             <h3>${esc(r.title)}</h3>
             <p>${esc(r.description || '')}</p>
-            <div class="work-meta"><span>${r.lieu ? '📍 ' + esc(r.lieu) : ''}</span><span>${esc(r.year || '')}</span></div>
+            <div class="work-meta"><span>${r.lieu ? '<svg class="meta-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>' + esc(r.lieu) : ''}</span><span>${esc(r.year || '')}</span></div>
           </div>
         </article>`).join('');
     } else { realSec.style.display = 'none'; }

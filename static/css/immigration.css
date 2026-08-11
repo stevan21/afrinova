@@ -71,7 +71,9 @@
 .imm-pays:hover {
   border-color: var(--imm); background: var(--imm-clair); transform: translateY(-2px);
 }
-.imm-pays-drapeau { font-size: 1.9rem; line-height: 1; }
+/* Drapeaux dessinés en SVG : les emoji s'affichaient en lettres sur Windows */
+.imm-pays-drapeau { display: block; width: 42px; line-height: 0; }
+.imm-pays-drapeau svg { width: 100%; height: auto; display: block; border-radius: 3px; }
 .imm-pays-nom { font-weight: 700; font-size: .9rem; color: var(--navy); text-align: center; }
 
 /* ------------------------------------------------------- Choix de l'objectif */
@@ -83,7 +85,12 @@
   font: inherit; transition: all .2s var(--ease);
 }
 .imm-motif:hover { border-color: var(--imm); background: var(--imm-clair); }
-.imm-motif-icone { font-size: 1.6rem; flex: 0 0 auto; }
+.imm-motif-icone { flex: 0 0 auto; width: 30px; color: var(--imm); line-height: 0; }
+.imm-motif-icone svg { width: 100%; height: auto; display: block; }
+
+/* Drapeau en tête du titre « votre objectif » */
+.imm-drapeau-titre { display: inline-block; width: 30px; vertical-align: -4px; line-height: 0; }
+.imm-drapeau-titre svg { width: 100%; height: auto; border-radius: 3px; }
 .imm-motif strong {
   display: block; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--navy);
 }
@@ -169,7 +176,15 @@
 .imm-insuffisant .imm-score-chiffre strong { color: var(--rouge); }
 
 .imm-score h2 { font-size: 1.15rem; margin-bottom: .2rem; }
-.imm-score-ou { color: var(--muted); font-size: .88rem; font-weight: 600; }
+.imm-score-ou {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  color: var(--muted); font-size: .88rem; font-weight: 600;
+}
+.imm-ico-inline { width: 18px; color: var(--imm); line-height: 0; flex: 0 0 auto; }
+.imm-drapeau-inline { width: 22px; line-height: 0; flex: 0 0 auto; }
+.imm-ico-inline svg, .imm-drapeau-inline svg { width: 100%; height: auto; display: block; }
+.imm-drapeau-inline svg { border-radius: 2px; }
+.imm-sep { opacity: .5; }
 .imm-verdict-txt { font-size: .92rem; line-height: 1.6; }
 
 .imm-titre-detail, .imm-conseils h3, .imm-suite h3 {

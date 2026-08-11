@@ -55,7 +55,7 @@
     viewEl.innerHTML = '<div class="empty">Chargement…</div>';
     closeSidebar();
     try { await ensureData(name); }
-    catch (err) { viewEl.innerHTML = `<div class="panel"><div class="empty">⚠️ ${esc(err.message)}</div></div>`; return; }
+    catch (err) { viewEl.innerHTML = `<div class="panel"><div class="empty">${IC.alert} ${esc(err.message)}</div></div>`; return; }
     viewEl.innerHTML = RENDER[name]();
     bindView(name);
   }
@@ -133,7 +133,7 @@
             <div class="field"><label>Photo / visuel du pôle</label>
               <div class="photo-row"><div class="photo-preview" id="ePreview"></div><div class="photo-controls"><input id="pPhoto" type="file" accept="image/*" /></div></div></div>
           </div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">💾 Enregistrer la présentation</button></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${IC.save} Enregistrer la présentation</button></div>
         </form>
       </div>
 
@@ -142,7 +142,7 @@
         <form id="presForm" class="form-row" style="align-items:flex-end">
           <div class="field" style="flex:1"><label>Titre *</label><input id="presTitle" required value="${edP ? esc(edP.title) : ''}" placeholder="Ex. Gros œuvre" /></div>
           <div class="field" style="flex:2"><label>Description</label><input id="presDesc" value="${edP ? esc(edP.description || '') : ''}" placeholder="Courte description" /></div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">${edP ? '💾' : '+ Ajouter'}</button>${edP ? '<button class="btn btn-ghost" type="button" id="presCancel">Annuler</button>' : ''}</div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${edP ? '${IC.save}' : '+ Ajouter'}</button>${edP ? '<button class="btn btn-ghost" type="button" id="presCancel">Annuler</button>' : ''}</div>
         </form>
         ${s.prestations.length ? `<div class="report-list" style="margin-top:16px">${s.prestations.map(presRow).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune prestation.</p></div>`}
       </div>
@@ -159,7 +159,7 @@
             <div class="field"><label>Photo ${edR ? '(remplacer)' : ''}</label><input id="realPhoto" type="file" accept="image/*" /></div>
           </div>
           <div class="field"><label>Description</label><textarea id="realDesc" rows="3" placeholder="Décrivez la réalisation…">${edR ? esc(edR.description || '') : ''}</textarea></div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">${edR ? '💾 Enregistrer' : '+ Ajouter la réalisation'}</button>${edR ? '<button class="btn btn-ghost" type="button" id="realCancel">Annuler</button>' : ''}</div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${edR ? '${IC.save} Enregistrer' : '+ Ajouter la réalisation'}</button>${edR ? '<button class="btn btn-ghost" type="button" id="realCancel">Annuler</button>' : ''}</div>
         </form>
         ${s.realisations.length ? `<div class="exp-grid" style="margin-top:18px">${s.realisations.map(realCard).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune réalisation.</p></div>`}
       </div>`;
@@ -169,9 +169,9 @@
       <div class="report-actions"><button class="btn-icon edit" data-epres="${p.id}" title="Modifier">${IC.pencil}</button><button class="btn-icon" data-dpres="${p.id}" title="Supprimer">${IC.trash}</button></div></div>`;
   }
   function realCard(r) {
-    const top = r.photo ? `<div class="exp-top has-photo"><img src="${r.photo}" alt="${esc(r.title)}"></div>` : `<div class="exp-top" style="background:${state.service.color || '#1B2A63'}"><span class="exp-ic">🏗️</span></div>`;
+    const top = r.photo ? `<div class="exp-top has-photo"><img src="${r.photo}" alt="${esc(r.title)}"></div>` : `<div class="exp-top" style="background:${state.service.color || '#1B2A63'}"><span class="exp-ic">${IC.site}</span></div>`;
     return `<div class="exp-card"><div class="exp-actions"><button class="btn-icon edit" data-ereal="${r.id}" title="Modifier">${IC.pencil}</button><button class="btn-icon" data-dreal="${r.id}" title="Supprimer">${IC.trash}</button></div>${top}
-      <div class="exp-body"><h4>${esc(r.title)}</h4><p>${esc(r.description || '')}</p><div class="mini" style="margin-top:6px">${r.lieu ? '📍 ' + esc(r.lieu) + (r.year ? ' · ' : '') : ''}${esc(r.year || '')}</div></div></div>`;
+      <div class="exp-body"><h4>${esc(r.title)}</h4><p>${esc(r.description || '')}</p><div class="mini" style="margin-top:6px">${r.lieu ? '${IC.pin} ' + esc(r.lieu) + (r.year ? ' · ' : '') : ''}${esc(r.year || '')}</div></div></div>`;
   }
   function renderPreview() {
     const p = $('ePreview'); if (!p) return;
@@ -183,10 +183,10 @@
   function renderNotes() {
     const notes = state.notes;
     const ed = editNote ? notes.find(n => n.id === editNote) : null;
-    return `<div class="panel" style="max-width:760px"><div class="panel-head"><h3>${ed ? '✏️ Modifier la note' : '📝 Nouvelle note'}</h3></div>
+    return `<div class="panel" style="max-width:760px"><div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier la note' : '${IC.memo} Nouvelle note'}</h3></div>
         <form id="noteForm"><div class="field"><label>Titre *</label><input id="nTitle" required value="${ed ? esc(ed.title) : ''}" placeholder="Titre" /></div>
           <div class="field"><label>Contenu</label><textarea id="nBody" rows="5" placeholder="Écrivez votre note…">${ed ? esc(ed.body || '') : ''}</textarea></div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Ajouter la note'}</button>${ed ? '<button class="btn btn-ghost" type="button" id="noteCancel">Annuler</button>' : ''}</div></form></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Ajouter la note'}</button>${ed ? '<button class="btn btn-ghost" type="button" id="noteCancel">Annuler</button>' : ''}</div></form></div>
       <div class="panel"><div class="panel-head"><h3>Mes notes (${notes.length})</h3><input class="search" id="noteSearch" type="search" placeholder="Rechercher…" /></div>
         ${notes.length ? `<div class="notes-grid">${notes.map(noteCard).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucune note.</p></div>`}</div>`;
   }
@@ -201,13 +201,13 @@
     const reports = state.reports;
     const ed = editReport ? reports.find(r => r.id === editReport) : null;
     const today = new Date().toISOString().slice(0, 10);
-    return `<div class="panel" style="max-width:820px"><div class="panel-head"><h3>${ed ? '✏️ Modifier le rapport' : '📄 Nouveau rapport'}</h3></div>
+    return `<div class="panel" style="max-width:820px"><div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier le rapport' : '${IC.page} Nouveau rapport'}</h3></div>
         <form id="repForm">
           <div class="form-row"><div class="field"><label>Titre *</label><input id="rTitle" required value="${ed ? esc(ed.title) : ''}" placeholder="Ex. Rapport de chantier" /></div>
             <div class="field"><label>Auteur</label><input id="rAuthor" value="${ed ? esc(ed.author || '') : esc(state.me ? state.me.name : '')}" placeholder="Votre nom" /></div></div>
           <div class="form-row"><div class="field"><label>Date</label><input id="rDate" type="date" value="${ed ? (ed.date || today) : today}" /></div><div class="field"></div></div>
           <div class="field"><label>Contenu</label><textarea id="rBody" rows="8" placeholder="Rédigez le rapport…">${ed ? esc(ed.body || '') : ''}</textarea></div>
-          <div class="form-actions"><button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Créer le rapport'}</button>${ed ? '<button class="btn btn-ghost" type="button" id="repCancel">Annuler</button>' : ''}</div></form></div>
+          <div class="form-actions"><button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Créer le rapport'}</button>${ed ? '<button class="btn btn-ghost" type="button" id="repCancel">Annuler</button>' : ''}</div></form></div>
       <div class="panel"><div class="panel-head"><h3>Mes rapports (${reports.length})</h3><input class="search" id="repSearch" type="search" placeholder="Rechercher…" /></div>
         ${reports.length ? `<div class="report-list">${reports.map(reportRow).join('')}</div>` : `<div class="empty">${IC.inbox}<p>Aucun rapport.</p></div>`}</div>`;
   }
@@ -252,8 +252,8 @@
     if (c) {
       const conv = msgs.filter(m => (m.sender === me.id && m.recipient === chatId) || (m.sender === chatId && m.recipient === me.id));
       thread = `<div class="thread-head">${memberAva(c, 38)}<div><b>${esc(c.name)}</b><br><span class="mini">${c.pole ? esc(c.pole) : 'Membre'}</span></div></div>
-        <div class="msg-list" id="msgList">${conv.length ? conv.map(m => `<div class="bubble ${m.sender === me.id ? 'sent' : 'recv'}">${nl2br(m.text)}<span class="b-time">${fmtDate(m.created)}</span></div>`).join('') : `<div class="msg-empty mini">Aucun message. Écrivez le premier 👋</div>`}</div>
-        <form class="composer" id="msgForm"><input id="msgInput" placeholder="Votre message…" autocomplete="off" /><button class="msg-send" type="submit">➤</button></form>`;
+        <div class="msg-list" id="msgList">${conv.length ? conv.map(m => `<div class="bubble ${m.sender === me.id ? 'sent' : 'recv'}">${nl2br(m.text)}<span class="b-time">${fmtDate(m.created)}</span></div>`).join('') : `<div class="msg-empty mini">Aucun message. Écrivez le premier</div>`}</div>
+        <form class="composer" id="msgForm"><input id="msgInput" placeholder="Votre message…" autocomplete="off" /><button class="msg-send" type="submit"><svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M3.4 11.9 20 4l-7.9 16.6-2-6.7-6.7-2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button></form>`;
     } else thread = `<div class="msg-placeholder">${IC.inbox}<p>Sélectionnez un membre à gauche pour discuter.</p></div>`;
     return `<div class="me-bar"><label>Connecté en tant que :</label> <b style="color:var(--navy)">${esc(me.name)}</b></div>
       <div class="msg-layout"><div class="msg-contacts">${list}</div><div class="msg-thread">${thread}</div></div>`;
@@ -432,7 +432,7 @@
     if (!exp) return `<div class="panel">${emptyBox("Aucun pôle ne vous est affecté. Demandez à l'administrateur.")}</div>`;
     return `
       <div class="panel">
-        <div class="panel-head"><h3>${ed ? '✏️ Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
+        <div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
           <span class="sub">${ed ? esc(ed.name) : 'Il apparaîtra sur la page Location du site'}</span></div>
         <form id="vehForm">
           <div class="form-row">
@@ -458,7 +458,7 @@
             <div class="field"><label>Photos supplémentaires (plusieurs)</label><input id="vPhotos" type="file" accept="image/*" multiple /></div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" type="submit">${ed ? '💾 Enregistrer' : '+ Ajouter le véhicule'}</button>
+            <button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Ajouter le véhicule'}</button>
             ${ed ? '<button class="btn btn-ghost" type="button" id="vehCancel">Annuler</button>' : ''}
           </div>
         </form>
@@ -472,7 +472,7 @@
   function vehCard(v) {
     const pics = (v.photo ? 1 : 0) + (v.photos || []).length;
     const cover = v.photo ? `<img src="${v.photo}" alt="${esc(v.name)}">`
-      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : '🚗');
+      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : IC.car);
     return `<div class="chef-card">
       <button class="btn-icon chef-edit" data-edit-veh="${v.id}" title="Modifier">${IC.pencil}</button>
       <button class="btn-icon chef-del" data-del-veh="${v.id}" title="Supprimer">${IC.trash}</button>
@@ -482,7 +482,7 @@
       <div class="chef-info">
         ${v.price_ville ? 'Ville : ' + fcfa(v.price_ville) + ' / jour<br>' : 'Ville : sur demande<br>'}
         ${v.price_hors_ville ? 'Hors ville : ' + fcfa(v.price_hors_ville) + ' / jour<br>' : 'Hors ville : sur demande<br>'}
-        ${v.remise ? `<span class="mini">🏷 ${esc(v.remise)}</span><br>` : ''}
+        ${v.remise ? `<span class="mini">${IC.tag} ${esc(v.remise)}</span><br>` : ''}
         <span class="mini">${pics} photo${pics > 1 ? 's' : ''}</span>
         ${(v.photos || []).length ? `<br>${v.photos.map(p => `<button class="btn-icon" data-del-photo="${p.id}" title="Supprimer cette photo">${IC.trash}</button>`).join('')}` : ''}
       </div>
@@ -531,7 +531,16 @@
     star: '<svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 21l-5.2 2.9 1-5.8L3.6 9.1l5.8-.8L12 3Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg>',
     note: '<svg viewBox="0 0 24 24" fill="none" width="24" height="24"><rect x="4" y="3" width="16" height="18" rx="2" stroke="#fff" stroke-width="1.7"/><path d="M8 8h8M8 12h8M8 16h4" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>',
     report: '<svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M6 3h9l4 4v14H6V3Z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3v5h5M9 13v4M12 11v6M15 15v2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>',
-    inbox: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 13l3-8h12l3 8v6H3v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
+    inbox: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 13l3-8h12l3 8v6H3v-6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13h5l1.5 2.5h5L16 13h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    save: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M5 3h11l3 3v15H5V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 3v6h7V3M8 14h8v7H8v-7Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M12 3.8 2.8 19.4h18.4L12 3.8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 10v4M12 16.8h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    car: '<svg viewBox="0 0 24 24" fill="none" width="34" height="34"><path d="M3 13l1.5-4.5A2 2 0 0 1 6.4 7h11.2a2 2 0 0 1 1.9 1.5L21 13v5h-2v-2H5v2H3v-5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="16" r="1.2" fill="currentColor"/><circle cx="17" cy="16" r="1.2" fill="currentColor"/></svg>',
+    tag: '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M3 12.6V4.5A1.5 1.5 0 0 1 4.5 3h8.1a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8l-6.6 6.6a2 2 0 0 1-2.8 0l-7-7a2 2 0 0 1-.6-1.4Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.8" cy="7.8" r="1.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    eye: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    memo: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M6 3h12v18H6V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 8h6M9 12h6M9 16h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    page: '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M6 3h9l4 4v14H6V3Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3v5h5M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    site: '<svg viewBox="0 0 24 24" fill="none" width="34" height="34"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9h.01M9 13h.01M9 17h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" fill="none" width="14" height="14"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
   /* ====== Démarrage ====== */
