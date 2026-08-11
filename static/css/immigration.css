@@ -1,0 +1,272 @@
+/* ===================================================================
+   AFRINOVA — Page « Évaluation du dossier d'immigration »
+   Complète styles.css (variables et composants de base y sont définis).
+   =================================================================== */
+
+:root {
+  --imm: #6B3FA0;
+  --imm-clair: #f4effa;
+  --vert: #16a34a;
+  --ambre: #d97706;
+  --rouge: #dc2626;
+}
+
+/* ------------------------------------------------------- En-tête */
+.imm-hero {
+  padding: 108px 0 32px;
+  background: linear-gradient(180deg, var(--imm-clair), var(--bg));
+}
+.imm-hero h1 {
+  font-family: 'Poppins', sans-serif; font-weight: 800; line-height: 1.15;
+  font-size: clamp(1.6rem, 4vw, 2.4rem); margin-bottom: .6rem;
+}
+.imm-lead { color: var(--muted); font-size: 1rem; max-width: 60ch; }
+.imm-atouts {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.2rem;
+}
+.imm-atouts li {
+  padding: .3rem .8rem; border-radius: 999px; background: var(--white);
+  border: 1px solid var(--line); font-size: .8rem; font-weight: 600; color: var(--imm);
+}
+
+.imm-section { padding-top: 32px; }
+.imm-wrap { max-width: 720px; }
+
+/* ------------------------------------------------------- Progression */
+.imm-progress { margin-bottom: 18px; }
+.imm-progress[hidden] { display: none; }
+.imm-progress-bar {
+  height: 6px; border-radius: 999px; background: var(--line); overflow: hidden;
+}
+.imm-progress-bar span {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: linear-gradient(90deg, var(--imm), #9a6fd0);
+  transition: width .4s var(--ease);
+}
+.imm-progress p {
+  margin-top: .5rem; font-size: .8rem; font-weight: 600; color: var(--muted);
+}
+
+/* ------------------------------------------------------- Carte */
+.imm-card {
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 28px 26px; box-shadow: var(--shadow-sm);
+}
+.imm-card h2 {
+  font-family: 'Poppins', sans-serif; font-size: 1.25rem; margin-bottom: .4rem;
+}
+.imm-sous { color: var(--muted); font-size: .9rem; margin-bottom: 1.4rem; }
+.imm-loading { color: var(--muted); text-align: center; padding: 30px 0; }
+
+/* ------------------------------------------------------- Choix du pays */
+.imm-pays-grille {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;
+}
+.imm-pays {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 18px 12px; border-radius: 14px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--white);
+  font: inherit; transition: all .2s var(--ease);
+}
+.imm-pays:hover {
+  border-color: var(--imm); background: var(--imm-clair); transform: translateY(-2px);
+}
+.imm-pays-drapeau { font-size: 1.9rem; line-height: 1; }
+.imm-pays-nom { font-weight: 700; font-size: .9rem; color: var(--navy); text-align: center; }
+
+/* ------------------------------------------------------- Choix de l'objectif */
+.imm-motifs { display: flex; flex-direction: column; gap: 10px; }
+.imm-motif {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  padding: 16px 18px; border-radius: 14px; cursor: pointer;
+  border: 1.5px solid var(--line); background: var(--white);
+  font: inherit; transition: all .2s var(--ease);
+}
+.imm-motif:hover { border-color: var(--imm); background: var(--imm-clair); }
+.imm-motif-icone { font-size: 1.6rem; flex: 0 0 auto; }
+.imm-motif strong {
+  display: block; font-family: 'Poppins', sans-serif; font-size: 1rem; color: var(--navy);
+}
+.imm-motif small { display: block; color: var(--muted); font-size: .82rem; margin-top: 2px; }
+
+.imm-retour {
+  margin-top: 1.4rem; padding: 0; border: 0; background: none;
+  color: var(--muted); font: inherit; font-size: .86rem; font-weight: 600; cursor: pointer;
+}
+.imm-retour:hover { color: var(--imm); }
+
+/* ------------------------------------------------------- Questionnaire */
+.imm-bloc { border: 0; padding: 0; min-width: 0; margin-bottom: 1.8rem; }
+.imm-bloc legend {
+  display: flex; align-items: baseline; gap: 10px; padding: 0; margin-bottom: .7rem;
+  font-family: 'Poppins', sans-serif; font-size: .98rem; font-weight: 700; color: var(--navy);
+}
+.imm-num {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--imm-clair); color: var(--imm);
+  font-size: .78rem; font-weight: 800; display: inline-grid; place-items: center;
+}
+.imm-aide { color: var(--muted); font-size: .82rem; margin-bottom: .6rem; }
+.imm-aide strong { color: var(--imm); }
+
+.imm-opt {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: .65rem .85rem; margin-bottom: 7px; border-radius: 11px;
+  border: 1.5px solid var(--line); background: #fbfcff;
+  font-size: .9rem; transition: all .18s var(--ease);
+}
+.imm-opt:hover { border-color: #cdbde6; }
+.imm-opt input { accent-color: var(--imm); width: 17px; height: 17px; flex: 0 0 auto; cursor: pointer; }
+.imm-opt.is-on { border-color: var(--imm); background: var(--imm-clair); font-weight: 600; }
+
+.imm-champ-suffixe {
+  display: flex; align-items: center;
+  border: 1.5px solid var(--line); border-radius: var(--radius-sm); background: #fbfcff;
+  transition: border-color .2s, box-shadow .2s;
+}
+.imm-champ-suffixe input {
+  flex: 1; min-width: 0; border: 0; background: none; font: inherit; font-size: .95rem;
+  padding: .7rem .9rem; color: var(--ink);
+}
+.imm-champ-suffixe input:focus { outline: none; }
+.imm-champ-suffixe > span {
+  padding-right: .9rem; color: var(--muted); font-size: .88rem; font-weight: 600; flex: 0 0 auto;
+}
+.imm-champ-suffixe:focus-within {
+  border-color: var(--imm); box-shadow: 0 0 0 4px rgba(107, 63, 160, .12);
+}
+
+.imm-err { color: var(--rouge); font-size: .85rem; font-weight: 600; margin-bottom: .8rem; }
+.imm-err[hidden] { display: none; }
+.imm-valider { margin-top: .4rem; }
+
+/* ------------------------------------------------------- Résultat */
+.imm-resultat {
+  border-radius: var(--radius); padding: 22px; margin-bottom: 26px;
+  border: 1.5px solid var(--line); background: var(--bg-alt);
+}
+.imm-resultat.imm-solide { border-color: #a7e0bd; background: #f0fbf4; }
+.imm-resultat.imm-favorable { border-color: #bfd9f5; background: #f1f7fe; }
+.imm-resultat.imm-fragile { border-color: #f3d9a6; background: #fdf8ef; }
+.imm-resultat.imm-insuffisant { border-color: #f2c0c0; background: #fdf2f2; }
+
+.imm-score { display: flex; align-items: center; gap: 18px; margin-bottom: .9rem; }
+.imm-score-chiffre {
+  flex: 0 0 auto; width: 86px; height: 86px; border-radius: 50%;
+  display: grid; place-content: center; text-align: center;
+  background: var(--white); border: 3px solid var(--imm);
+}
+.imm-score-chiffre strong {
+  display: block; font-family: 'Poppins', sans-serif; font-weight: 800;
+  font-size: 1.9rem; line-height: 1; color: var(--imm);
+}
+.imm-score-chiffre span { font-size: .72rem; color: var(--muted); }
+.imm-solide .imm-score-chiffre { border-color: var(--vert); }
+.imm-solide .imm-score-chiffre strong { color: var(--vert); }
+.imm-fragile .imm-score-chiffre { border-color: var(--ambre); }
+.imm-fragile .imm-score-chiffre strong { color: var(--ambre); }
+.imm-insuffisant .imm-score-chiffre { border-color: var(--rouge); }
+.imm-insuffisant .imm-score-chiffre strong { color: var(--rouge); }
+
+.imm-score h2 { font-size: 1.15rem; margin-bottom: .2rem; }
+.imm-score-ou { color: var(--muted); font-size: .88rem; font-weight: 600; }
+.imm-verdict-txt { font-size: .92rem; line-height: 1.6; }
+
+.imm-titre-detail, .imm-conseils h3, .imm-suite h3 {
+  font-family: 'Poppins', sans-serif; font-size: 1.02rem; margin-bottom: .9rem;
+}
+.imm-detail { margin-bottom: 26px; }
+.imm-detail li { margin-bottom: .8rem; }
+.imm-ligne {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: .8rem; font-size: .88rem; margin-bottom: .25rem;
+}
+.imm-ligne strong { font-family: 'Poppins', sans-serif; color: var(--navy); }
+.imm-ligne small { color: var(--muted); font-weight: 500; }
+.imm-jauge { height: 7px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.imm-jauge span {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--imm), #9a6fd0);
+}
+
+.imm-conseils {
+  border-top: 1px solid var(--line); padding-top: 22px; margin-bottom: 26px;
+}
+.imm-conseil {
+  padding: 14px 16px; border-radius: 12px; background: #fdf8ef;
+  border-left: 3px solid var(--ambre); margin-bottom: 10px;
+}
+.imm-conseil h4 {
+  font-size: .92rem; margin-bottom: .3rem;
+  display: flex; justify-content: space-between; align-items: baseline; gap: .6rem;
+}
+.imm-conseil h4 span { font-size: .76rem; font-weight: 600; color: var(--ambre); white-space: nowrap; }
+.imm-conseil p { font-size: .87rem; color: var(--muted); line-height: 1.55; }
+
+/* ------------------------------------------------------- Reprise par un conseiller */
+.imm-suite {
+  border-top: 1px solid var(--line); padding-top: 22px;
+}
+.imm-suite > p { color: var(--muted); font-size: .9rem; margin-bottom: 1.1rem; }
+.imm-card .field { margin-bottom: .9rem; }
+.imm-card .field label { font-size: .85rem; }
+.imm-card .field input:focus {
+  border-color: var(--imm); box-shadow: 0 0 0 4px rgba(107, 63, 160, .12);
+}
+/* Indicatif collé au champ (le visiteur ne saisit que la partie locale) */
+.imm-card .input-prefix {
+  display: flex; align-items: center; background: #fbfcff;
+  border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+  transition: border-color .2s, box-shadow .2s;
+}
+.imm-card .input-prefix > span {
+  padding-left: .9rem; color: var(--muted); font-weight: 600; font-size: .92rem; flex: 0 0 auto;
+}
+.imm-card .input-prefix input {
+  flex: 1; min-width: 0; border: 0; background: none; padding-left: .45rem;
+}
+.imm-card .input-prefix input:focus { box-shadow: none; border-color: transparent; }
+.imm-card .input-prefix:focus-within {
+  border-color: var(--imm); box-shadow: 0 0 0 4px rgba(107, 63, 160, .12);
+}
+
+.imm-note { margin-top: .7rem; text-align: center; font-size: .86rem; }
+.imm-note.is-ok { color: var(--vert); font-weight: 600; }
+
+.imm-refaire {
+  display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+  margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line);
+}
+.imm-refaire button {
+  padding: 0; border: 0; background: none; color: var(--muted);
+  font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+}
+.imm-refaire button:hover { color: var(--imm); }
+
+/* ------------------------------------------------------- Avertissement */
+.imm-avertissement {
+  margin-top: 20px; padding: 14px 16px; border-radius: 12px;
+  background: var(--bg-alt); border: 1px solid var(--line);
+  color: var(--muted); font-size: .8rem; line-height: 1.6;
+}
+.imm-avertissement strong { color: var(--navy); }
+
+/* ------------------------------------------------------- Responsive */
+@media (max-width: 900px) {
+  .imm-hero { padding: 96px 0 26px; }
+}
+
+@media (max-width: 640px) {
+  .imm-card { padding: 22px 18px; border-radius: 16px; }
+  .imm-pays-grille { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .imm-score { gap: 14px; }
+  .imm-score-chiffre { width: 74px; height: 74px; }
+  .imm-score-chiffre strong { font-size: 1.6rem; }
+  .imm-score h2 { font-size: 1.05rem; }
+  /* Sur iOS, une police < 16px déclenche un zoom automatique à la saisie */
+  .imm-champ-suffixe input, .imm-card .field input { font-size: 16px; }
+}
+
+@media (max-width: 380px) {
+  .imm-pays-grille { grid-template-columns: 1fr; }
+}

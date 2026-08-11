@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import (Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis,
-                     Vehicule, VehiculePhoto, Reservation)
+                     Vehicule, VehiculePhoto, Reservation, EvaluationImmigration)
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -108,6 +108,19 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"date_fin": "La date de fin doit suivre la date de début."})
         return attrs
+
+
+class EvaluationImmigrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluationImmigration
+        fields = ["id", "name", "phone", "email", "pays", "motif", "score",
+                  "verdict", "reponses", "points_faibles", "status", "created"]
+        read_only_fields = ["created"]
+
+    def validate_score(self, valeur):
+        if not 0 <= valeur <= 100:
+            raise serializers.ValidationError("Le score doit être compris entre 0 et 100.")
+        return valeur
 
 
 class UserSerializer(serializers.ModelSerializer):

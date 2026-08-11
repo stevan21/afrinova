@@ -17,6 +17,7 @@ urlpatterns = [
     path("connexion.html", views.connexion, name="connexion"),
     path("connexion", views.connexion),
     path("location.html", views.location, name="location"),
+    path("immigration.html", views.immigration, name="immigration"),
 
     # Médias (photos uploadées) — servis en dev comme en prod
     re_path(r"^media/(?P<path>.*)$", static_serve, {"document_root": settings.MEDIA_ROOT}),

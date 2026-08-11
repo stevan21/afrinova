@@ -11,12 +11,13 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from .models import (Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis,
-                     Vehicule, VehiculePhoto, Reservation)
+                     Vehicule, VehiculePhoto, Reservation, EvaluationImmigration)
 from .serializers import (
     MemberSerializer, ExpertiseSerializer, ExpertiseDetailSerializer,
     PrestationSerializer, RealisationSerializer,
     NoteSerializer, ReportSerializer, MessageSerializer, DevisSerializer, UserSerializer,
     VehiculeSerializer, VehiculePhotoSerializer, ReservationSerializer,
+    EvaluationImmigrationSerializer,
 )
 
 
@@ -370,6 +371,48 @@ class ReservationViewSet(viewsets.ModelViewSet):
         instance.delete()
 
 
+# ===================== Immigration =====================
+class EvaluationImmigrationViewSet(viewsets.ModelViewSet):
+    """Dépôt public de l'auto-évaluation ; consultation réservée aux gestionnaires.
+
+    Contrairement au parc de véhicules, l'évaluation n'est rattachée à aucun
+    pôle en base : on autorise l'admin, et l'expert du pôle Immigration.
+    """
+    serializer_class = EvaluationImmigrationSerializer
+    queryset = EvaluationImmigration.objects.all()
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def _gere_immigration(self):
+        user = self.request.user
+        if user.is_staff:
+            return True
+        member = getattr(user, "member", None)
+        expertise = getattr(member, "expertise", None)
+        return bool(expertise and "immigration" in (expertise.name or "").lower())
+
+    def get_queryset(self):
+        if self.action == "create":
+            return EvaluationImmigration.objects.none()
+        return (EvaluationImmigration.objects.all() if self._gere_immigration()
+                else EvaluationImmigration.objects.none())
+
+    def _check(self):
+        if not self._gere_immigration():
+            raise PermissionDenied("Vous ne gérez pas le pôle Immigration.")
+
+    def perform_update(self, serializer):
+        self._check()
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check()
+        instance.delete()
+
+
 # ===================== Pages (templates Django) =====================
 def index(request):
     return render(request, "index.html")
@@ -389,6 +432,10 @@ def expert_page(request):
 
 def connexion(request):
     return render(request, "connexion.html")
+
+
+def immigration(request):
+    return render(request, "immigration.html")
 
 
 def location(request):

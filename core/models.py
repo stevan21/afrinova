@@ -223,6 +223,41 @@ class Reservation(models.Model):
         return f"{self.name} - {self.vehicule or 'véhicule supprimé'}"
 
 
+class EvaluationImmigration(models.Model):
+    """Auto-évaluation remplie depuis /immigration.html.
+
+    Le score est calculé côté navigateur par le barème public
+    (static/js/immigration-bareme.js) ; on conserve ici le résultat et les
+    réponses pour que le conseiller reprenne le dossier sans tout redemander.
+    """
+    STATUS = [
+        ("nouvelle", "Nouvelle"),
+        ("contactee", "Contactée"),
+        ("accompagnee", "En accompagnement"),
+        ("close", "Close"),
+    ]
+    name = models.CharField("Nom", max_length=160)
+    phone = models.CharField(max_length=40, blank=True, default="")
+    email = models.EmailField(blank=True, default="")
+    pays = models.CharField("Destination", max_length=40)
+    motif = models.CharField("Objectif", max_length=20)
+    score = models.PositiveIntegerField(default=0)
+    verdict = models.CharField(max_length=40, blank=True, default="")
+    # Réponses brutes du questionnaire, pour que le conseiller voie le détail
+    reponses = models.JSONField(default=dict, blank=True)
+    points_faibles = models.JSONField(default=list, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS, default="nouvelle")
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+        verbose_name = "Évaluation immigration"
+        verbose_name_plural = "Évaluations immigration"
+
+    def __str__(self):
+        return f"{self.name} — {self.pays} ({self.score}/100)"
+
+
 class Note(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="notes")
     title = models.CharField(max_length=200)

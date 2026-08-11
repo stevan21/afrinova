@@ -452,9 +452,10 @@ ul{list-style:none}
   .tag-2{right:0}
   .tag-3{left:8%}
 }
-/* Le menu horizontal ne tient plus sous ~880px : on bascule sur le burger
-   bien avant le seuil mobile, sinon il déborde de la page. */
-@media (max-width:900px){
+/* Avec huit entrées, le menu horizontal réclame ~960px : en dessous on
+   bascule sur le burger, bien avant le seuil mobile, sinon il déborde.
+   Si vous retirez des entrées du menu, ce seuil peut redescendre. */
+@media (max-width:1000px){
   .nav{
     position:fixed;inset:76px 0 auto 0;background:#fff;flex-direction:column;gap:0;
     padding:1rem 24px 1.5rem;border-bottom:1px solid var(--line);box-shadow:var(--shadow);

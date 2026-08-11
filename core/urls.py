@@ -14,6 +14,8 @@ router.register("realisations", views.RealisationViewSet, basename="realisation"
 router.register("vehicules", views.VehiculeViewSet, basename="vehicule")
 router.register("vehicule-photos", views.VehiculePhotoViewSet, basename="vehicule-photo")
 router.register("reservations", views.ReservationViewSet, basename="reservation")
+router.register("evaluations-immigration", views.EvaluationImmigrationViewSet,
+                basename="evaluation-immigration")
 
 urlpatterns = [
     path("auth/login", views.login_view),

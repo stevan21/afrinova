@@ -33,11 +33,20 @@
     return `<div class="service-icon"><span class="ic-letter">${esc(letter)}</span></div>`;
   }
 
-  // Le pôle location a sa propre page (catalogue + réservation) au lieu de la page service générique.
-  const isLocation = (x) => /location|vehicule|voiture/.test(norm(x.name));
+  // Deux pôles ont leur page dédiée plutôt que la page service générique :
+  // location (catalogue + réservation) et immigration (évaluation de dossier).
+  const PAGES_DEDIEES = [
+    { motif: /location|vehicule|voiture/, page: 'location.html' },
+    { motif: /immigration|visa/, page: 'immigration.html' }
+  ];
+  const pageDe = (x) => {
+    const n = norm(x.name);
+    const trouve = PAGES_DEDIEES.find((p) => p.motif.test(n));
+    return trouve ? trouve.page : null;
+  };
 
   const cards = exps.map((x) => {
-    const href = isLocation(x) ? 'location.html' : (x.slug ? `service.html?p=${x.slug}` : '#contact');
+    const href = pageDe(x) || (x.slug ? `service.html?p=${x.slug}` : '#contact');
     return `<a class="service-card service-link reveal in" href="${href}" style="--c:${x.color || '#1B2A63'}">
       ${iconHtml(x)}
       <h3>${esc(x.name)}</h3>

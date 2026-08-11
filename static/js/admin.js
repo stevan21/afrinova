@@ -18,7 +18,7 @@
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
 
   const loginScreen = $('login'), appScreen = $('app'), viewEl = $('view'), titleEl = $('viewTitle');
-  const state = { me: null, members: [], expertises: [], devis: [], reports: [], messages: [], vehicules: [], reservations: [] };
+  const state = { me: null, members: [], expertises: [], devis: [], reports: [], messages: [], vehicules: [], reservations: [], evaluations: [] };
   let current = 'dashboard', devisFilter = 'all', chatId = null, editingChef = null;
   let editingVeh = null, resaFilter = 'all';
   const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR') + ' FCFA';
@@ -44,8 +44,8 @@
   $('logout').addEventListener('click', async () => { await API.logout(); API.setToken(null); state.me = null; showLogin(); });
 
   /* ====== Navigation SPA ====== */
-  const TITLES = { dashboard: 'Tableau de bord', chefs: 'Chefs de projet', expertises: 'Expertises', rapports: 'Rapports', devis: 'Devis', location: 'Parc de véhicules', reservations: 'Réservations', messages: 'Messages' };
-  const RENDER = { dashboard: renderDashboard, chefs: renderChefs, expertises: renderExpertises, rapports: renderRapports, devis: renderDevis, location: renderLocation, reservations: renderReservations, messages: renderMessages };
+  const TITLES = { dashboard: 'Tableau de bord', chefs: 'Chefs de projet', expertises: 'Expertises', rapports: 'Rapports', devis: 'Devis', location: 'Parc de véhicules', reservations: 'Réservations', immigration: 'Évaluations immigration', messages: 'Messages' };
+  const RENDER = { dashboard: renderDashboard, chefs: renderChefs, expertises: renderExpertises, rapports: renderRapports, devis: renderDevis, location: renderLocation, reservations: renderReservations, immigration: renderImmigration, messages: renderMessages };
 
   async function setView(name) {
     current = name;
@@ -66,6 +66,7 @@
     else if (name === 'devis') state.devis = await API.get('/devis/');
     else if (name === 'location') { const [v, e] = await Promise.all([API.get('/vehicules/'), API.get('/expertises/')]); state.vehicules = v; state.expertises = e; }
     else if (name === 'reservations') { const [r, v] = await Promise.all([API.get('/reservations/'), API.get('/vehicules/')]); state.reservations = r; state.vehicules = v; }
+    else if (name === 'immigration') state.evaluations = await API.get('/evaluations-immigration/');
     else if (name === 'messages') { const [m, msg] = await Promise.all([API.get('/members/'), API.get('/messages/')]); state.members = m; state.messages = msg; }
   }
   $('sideNav').addEventListener('click', (e) => { const b = e.target.closest('button[data-view]'); if (b) { editingChef = null; setView(b.dataset.view); } });
@@ -388,6 +389,71 @@
     </tr>`;
   }
 
+  /* ====== Vue : Évaluations immigration ====== */
+  // Le détail des réponses est replié : la liste reste lisible, le conseiller
+  // ouvre le dossier qui l'intéresse.
+  function renderImmigration() {
+    const list = state.evaluations || [];
+    const ST = ['nouvelle', 'contactee', 'accompagnee', 'close'];
+    const LIB = { nouvelle: 'Nouvelle', contactee: 'Contactée', accompagnee: 'En accompagnement', close: 'Close' };
+    if (!list.length) return `<div class="panel">${emptyBox('Aucune évaluation reçue pour le moment.')}</div>`;
+
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>Demandes reçues (${list.length})</h3>
+          <a class="btn btn-ghost btn-sm" href="immigration.html" target="_blank" rel="noopener">Voir la page ↗</a></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Reçue le</th><th>Candidat</th><th>Contact</th><th>Projet</th>
+            <th>Score</th><th>Verdict</th><th>À renforcer</th><th>Statut</th><th></th></tr></thead>
+          <tbody>${list.map(evalRow).join('')}</tbody>
+        </table></div>
+      </div>
+      ${list.map(evalDetail).join('')}`;
+
+    function evalRow(e) {
+      const st = e.status || 'nouvelle';
+      const faibles = (e.points_faibles || []).join(', ') || '—';
+      return `<tr>
+        <td class="mini">${fmtDate(e.created)}</td>
+        <td class="cell-strong">${esc(e.name)}</td>
+        <td class="mini">${esc(e.phone || '')}${e.email ? '<br>' + esc(e.email) : ''}</td>
+        <td class="mini">${esc(e.motif)}<br>${esc(e.pays)}</td>
+        <td><strong class="imm-badge ${scoreClasse(e.score)}">${e.score}/100</strong></td>
+        <td class="mini">${esc(e.verdict || '')}</td>
+        <td class="cell-msg mini">${esc(faibles)}</td>
+        <td><select class="status-select" data-eval-status="${e.id}">
+          ${ST.map(s => `<option value="${s}"${s === st ? ' selected' : ''}>${LIB[s]}</option>`).join('')}</select></td>
+        <td>
+          <button class="btn-icon" data-eval-detail="${e.id}" title="Voir les réponses">👁</button>
+          <button class="btn-icon" data-del-eval="${e.id}" title="Supprimer">${IC.trash}</button>
+        </td>
+      </tr>`;
+    }
+
+    function evalDetail(e) {
+      const r = e.reponses || {};
+      const lignes = Object.keys(r).length
+        ? Object.entries(r).map(([k, v]) =>
+            `<li><span>${esc(libelleCritere(k))}</span><strong>${esc(
+              Array.isArray(v) ? v.join(', ') : v)}</strong></li>`).join('')
+        : '<li>Aucune réponse enregistrée.</li>';
+      return `<div class="panel" id="evalDetail-${e.id}" hidden>
+        <div class="panel-head"><h3>Réponses de ${esc(e.name)}</h3>
+          <span class="sub">${esc(e.motif)} — ${esc(e.pays)} · ${e.score}/100</span></div>
+        <ul class="eval-reponses">${lignes}</ul>
+      </div>`;
+    }
+  }
+
+  const CRITERES_LIB = {
+    age: 'Âge', diplome: 'Niveau d\'études', langue: 'Niveau de langue',
+    experience: 'Expérience', admission: 'Admission', offre: 'Offre d\'emploi',
+    attaches: 'Attaches au pays', hebergement: 'Hébergement', duree: 'Durée du séjour',
+    fonds: 'Ressources (FCFA)', voyages: 'Historique de voyage', refus: 'Refus antérieurs'
+  };
+  const libelleCritere = (k) => CRITERES_LIB[k] || k;
+  const scoreClasse = (s) => s >= 75 ? 'sc-haut' : s >= 55 ? 'sc-moyen' : s >= 35 ? 'sc-bas' : 'sc-faible';
+
   /* ====== Vue : Messages ====== */
   function memberAva(c, s) { const inner = c.photo ? `<img src="${c.photo}" alt="">` : esc(initials(c.name)); return `<span class="m-ava" style="width:${s}px;height:${s}px;background:${avaColor(c.name)}">${inner}</span>`; }
   function renderMessages() {
@@ -553,6 +619,25 @@
       viewEl.querySelectorAll('[data-del-resa]').forEach(b => b.addEventListener('click', async () => {
         if (!confirm('Supprimer cette réservation ?')) return;
         await API.del('/reservations/' + b.dataset.delResa + '/'); toast('Réservation supprimée'); await setView('reservations');
+      }));
+    }
+
+    if (name === 'immigration') {
+      viewEl.querySelectorAll('[data-eval-detail]').forEach(b => b.addEventListener('click', () => {
+        const bloc = $('evalDetail-' + b.dataset.evalDetail);
+        if (bloc) {
+          bloc.hidden = !bloc.hidden;
+          if (!bloc.hidden) bloc.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }));
+      viewEl.querySelectorAll('[data-eval-status]').forEach(sel => sel.addEventListener('change', async () => {
+        await API.patch('/evaluations-immigration/' + sel.dataset.evalStatus + '/', { status: sel.value });
+        toast('Statut mis à jour'); await setView('immigration');
+      }));
+      viewEl.querySelectorAll('[data-del-eval]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette évaluation ?')) return;
+        await API.del('/evaluations-immigration/' + b.dataset.delEval + '/');
+        toast('Évaluation supprimée'); await setView('immigration');
       }));
     }
 
