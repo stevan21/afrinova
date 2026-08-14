@@ -23,6 +23,12 @@
   /* État du questionnaire */
   const etat = { etape: 0, pays: null, motif: null, reponses: {}, resultat: null };
 
+  /* Destinations fermées, pilotées depuis l'espace admin. Tant que la réponse
+     n'est pas arrivée, tout est ouvert : une API muette ne doit pas priver le
+     visiteur du questionnaire. */
+  let fermetures = {};
+  const estFerme = (cle) => fermetures[cle] !== undefined && !fermetures[cle].ouvert;
+
   const ETAPES = ['Destination', 'Objectif', 'Votre profil', 'Résultat'];
 
   /* ---------------- Calcul du score ---------------- */
@@ -104,15 +110,38 @@
   }
 
   function vueDestination() {
-    const cartes = Object.entries(B.PAYS).map(([cle, p]) => `
-      <button type="button" class="imm-pays" data-pays="${cle}">
+    const cartes = Object.entries(B.PAYS).map(([cle, p]) => {
+      const ferme = estFerme(cle);
+      // Fermée : la carte reste visible mais n'est plus un point d'entrée.
+      // On la sort du parcours au clavier plutôt que de la masquer, pour que
+      // le visiteur sache que la destination existe et qu'elle rouvrira.
+      return `
+      <button type="button" class="imm-pays${ferme ? ' is-ferme' : ''}"
+              ${ferme ? 'disabled aria-disabled="true"' : `data-pays="${cle}"`}>
         <span class="imm-pays-drapeau">${ICO.drapeau(cle)}</span>
         <span class="imm-pays-nom">${esc(p.nom)}</span>
-      </button>`).join('');
+        ${ferme ? '<span class="imm-pays-statut">Non disponible</span>' : ''}
+      </button>`;
+    }).join('');
+
+    // Motifs de fermeture : rappelés une fois sous la grille plutôt que
+    // répétés dans chaque carte, qui est trop étroite pour une phrase.
+    const motifs = Object.keys(B.PAYS)
+      .filter((cle) => estFerme(cle) && fermetures[cle].message)
+      .map((cle) => `<li><strong>${esc(B.PAYS[cle].nom)}</strong> : ${esc(fermetures[cle].message)}</li>`)
+      .join('');
+
+    const fermes = Object.keys(B.PAYS).filter(estFerme).length;
     return `
       <h2>Où souhaitez-vous aller&nbsp;?</h2>
       <p class="imm-sous">Les critères et les montants attendus changent d'un pays à l'autre.</p>
-      <div class="imm-pays-grille">${cartes}</div>`;
+      <div class="imm-pays-grille">${cartes}</div>
+      ${fermes ? `<div class="imm-fermetures">
+        <p>Les destinations grisées ne sont pas traitées en ce moment.
+           <a href="https://wa.me/${WHATSAPP}" target="_blank" rel="noopener">Écrivez-nous</a>
+           pour être prévenu de leur réouverture.</p>
+        ${motifs ? `<ul>${motifs}</ul>` : ''}
+      </div>` : ''}`;
   }
 
   function vueObjectif() {
@@ -269,10 +298,12 @@
 
   const VUES = [vueDestination, vueObjectif, vueProfil, vueResultat];
 
-  function afficher() {
+  /* `defiler` à false pour un simple rafraîchissement : redessiner la grille
+     quand les fermetures arrivent ne doit pas faire sauter la page. */
+  function afficher(defiler) {
     carte.innerHTML = VUES[etat.etape]();
     majProgression();
-    carte.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (defiler !== false) carte.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   /* ---------------- Interactions ---------------- */
@@ -410,4 +441,12 @@
   /* ---------------- Démarrage ---------------- */
   $('immRevision').textContent = B.REVISION;
   afficher();
+
+  // Les fermetures arrivent après le premier rendu : la grille se redessine
+  // seulement si le visiteur en est encore à choisir sa destination.
+  API.get('/pays-immigration/').then((list) => {
+    if (!Array.isArray(list)) return;
+    list.forEach((p) => { fermetures[p.cle] = p; });
+    if (etat.etape === 0) afficher(false);
+  }).catch(() => { /* toutes les destinations restent ouvertes */ });
 })();

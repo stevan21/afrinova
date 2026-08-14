@@ -13,7 +13,9 @@ router.register("prestations", views.PrestationViewSet, basename="prestation")
 router.register("realisations", views.RealisationViewSet, basename="realisation")
 router.register("vehicules", views.VehiculeViewSet, basename="vehicule")
 router.register("vehicule-photos", views.VehiculePhotoViewSet, basename="vehicule-photo")
+router.register("vehicule-videos", views.VehiculeVideoViewSet, basename="vehicule-video")
 router.register("reservations", views.ReservationViewSet, basename="reservation")
+router.register("pays-immigration", views.PaysImmigrationViewSet, basename="pays-immigration")
 router.register("evaluations-immigration", views.EvaluationImmigrationViewSet,
                 basename="evaluation-immigration")
 

@@ -185,6 +185,7 @@
           <div class="resa-recap-line"><span>Durée</span><strong id="recapDuree"></strong></div>
           <div class="resa-recap-line"><span id="recapZone">Tarif en ville</span><strong id="recapTarif"></strong></div>
           <p class="resa-remise" id="recapRemise" hidden></p>
+          <p class="resa-charge">Carburant et péages à la charge du client.</p>
         </div>
 
         <fieldset class="resa-block">
@@ -221,12 +222,13 @@
     </div>
   </div>
 
-  <!-- Visionneuse photos -->
+  <!-- Visionneuse photos et vidéos -->
   <div class="loc-lightbox" id="locLightbox" hidden>
     <button class="loc-lb-close" id="lbClose" aria-label="Fermer">✕</button>
-    <button class="loc-lb-nav loc-lb-prev" id="lbPrev" aria-label="Photo précédente">‹</button>
+    <button class="loc-lb-nav loc-lb-prev" id="lbPrev" aria-label="Média précédent">‹</button>
     <img id="lbImg" alt="" />
-    <button class="loc-lb-nav loc-lb-next" id="lbNext" aria-label="Photo suivante">›</button>
+    <video id="lbVideo" controls playsinline preload="metadata" hidden></video>
+    <button class="loc-lb-nav loc-lb-next" id="lbNext" aria-label="Média suivant">›</button>
     <span class="loc-lb-count" id="lbCount"></span>
   </div>
 

@@ -71,6 +71,28 @@
 .imm-pays:hover {
   border-color: var(--imm); background: var(--imm-clair); transform: translateY(-2px);
 }
+/* Destination fermée : lisible, mais visiblement hors parcours */
+.imm-pays.is-ferme {
+  cursor: not-allowed; background: var(--bg-alt);
+  border-style: dashed; border-color: var(--line);
+}
+.imm-pays.is-ferme:hover { border-color: var(--line); background: var(--bg-alt); transform: none; }
+.imm-pays.is-ferme .imm-pays-drapeau { filter: grayscale(1); opacity: .5; }
+.imm-pays.is-ferme .imm-pays-nom { color: var(--muted); }
+.imm-pays-statut {
+  padding: .12rem .5rem; border-radius: 999px;
+  background: rgba(120, 30, 30, .1); color: #7a1e1e;
+  font-size: .66rem; font-weight: 700;
+}
+/* Rappel sous la grille quand au moins une destination est fermée */
+.imm-fermetures {
+  margin-top: 16px; padding: .7rem .9rem; border-radius: 12px;
+  background: var(--bg-alt); border: 1px solid var(--line);
+  color: var(--muted); font-size: .82rem; line-height: 1.5;
+}
+.imm-fermetures a { color: var(--imm); font-weight: 600; }
+.imm-fermetures ul { margin: .5rem 0 0; padding-left: 1.1rem; }
+.imm-fermetures strong { color: var(--navy); }
 /* Drapeaux dessinés en SVG : les emoji s'affichaient en lettres sur Windows */
 .imm-pays-drapeau { display: block; width: 42px; line-height: 0; }
 .imm-pays-drapeau svg { width: 100%; height: auto; display: block; border-radius: 3px; }

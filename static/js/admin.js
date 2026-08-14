@@ -18,7 +18,7 @@
   const nl2br = (s) => esc(s).replace(/\n/g, '<br>');
 
   const loginScreen = $('login'), appScreen = $('app'), viewEl = $('view'), titleEl = $('viewTitle');
-  const state = { me: null, members: [], expertises: [], devis: [], reports: [], messages: [], vehicules: [], reservations: [], evaluations: [] };
+  const state = { me: null, members: [], expertises: [], devis: [], reports: [], messages: [], vehicules: [], reservations: [], evaluations: [], paysImmigration: [] };
   let current = 'dashboard', devisFilter = 'all', chatId = null, editingChef = null;
   let editingVeh = null, resaFilter = 'all';
   const fcfa = (n) => Number(n || 0).toLocaleString('fr-FR') + ' FCFA';
@@ -66,7 +66,7 @@
     else if (name === 'devis') state.devis = await API.get('/devis/');
     else if (name === 'location') { const [v, e] = await Promise.all([API.get('/vehicules/'), API.get('/expertises/')]); state.vehicules = v; state.expertises = e; }
     else if (name === 'reservations') { const [r, v] = await Promise.all([API.get('/reservations/'), API.get('/vehicules/')]); state.reservations = r; state.vehicules = v; }
-    else if (name === 'immigration') state.evaluations = await API.get('/evaluations-immigration/');
+    else if (name === 'immigration') { const [e, p] = await Promise.all([API.get('/evaluations-immigration/'), API.get('/pays-immigration/')]); state.evaluations = e; state.paysImmigration = p; }
     else if (name === 'messages') { const [m, msg] = await Promise.all([API.get('/members/'), API.get('/messages/')]); state.members = m; state.messages = msg; }
   }
   $('sideNav').addEventListener('click', (e) => { const b = e.target.closest('button[data-view]'); if (b) { editingChef = null; setView(b.dataset.view); } });
@@ -110,7 +110,7 @@
     const POLES = ['Direction', 'BTP', 'Informatique', 'Santé numérique', 'Immigration', 'Échange de devises', 'Location de voitures', 'Multiservices', 'Entretien & Nettoyage', 'Autre'];
     return `
       <div class="panel">
-        <div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier le chef de projet' : 'Ajouter un chef de projet'}</h3><span class="sub">${ed ? esc(ed.name) : 'Crée aussi son compte de connexion'}</span></div>
+        <div class="panel-head"><h3>${ed ? `${IC.pencil} Modifier le chef de projet` : 'Ajouter un chef de projet'}</h3><span class="sub">${ed ? esc(ed.name) : 'Crée aussi son compte de connexion'}</span></div>
         <form id="chefForm">
           <div class="form-row">
             <div class="field"><label>Nom complet *</label><input id="cName" required value="${ed ? esc(ed.name) : ''}" placeholder="Ex. Jean Mbarga" /></div>
@@ -135,7 +135,7 @@
             <div class="field"><label>Photo ${ed ? '(remplacer)' : '(optionnelle)'}</label><input id="cPhoto" type="file" accept="image/*" /></div>
           </div>
           <div class="form-actions">
-            <button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Ajouter le chef de projet'}</button>
+            <button class="btn btn-primary" type="submit">${ed ? `${IC.save} Enregistrer` : '+ Ajouter le chef de projet'}</button>
             ${ed ? '<button class="btn btn-ghost" type="button" id="chefCancel">Annuler</button>' : ''}
           </div>
         </form>
@@ -283,24 +283,60 @@
   }
 
   /* ====== Vue : Parc de véhicules ====== */
+
+  /* Volet de disponibilité : l'opération quotidienne, un clic par véhicule.
+     Il vient avant le formulaire d'ajout, qui ne sert que de temps en temps. */
+  function renderDispoParc() {
+    const vehs = state.vehicules || [];
+    if (!vehs.length) return '';
+    const loues = vehs.filter(v => !v.available).length;
+    const resume = loues
+      ? loues + ' véhicule' + (loues > 1 ? 's' : '') + ' en location'
+      : 'Tout le parc est disponible';
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>Disponibilité du parc</h3>
+          <span class="sub">${resume} — le changement s'applique aussitôt sur la page Location.</span></div>
+        <div class="dispo-list">${vehs.map(dispoRow).join('')}</div>
+      </div>`;
+  }
+  function dispoRow(v) {
+    const meta = [v.year, v.ville].filter(Boolean).map(esc).join(' · ');
+    const cover = v.photo ? `<img src="${v.photo}" alt="">`
+      : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="">` : IC.car);
+    return `<div class="dispo-row${v.available ? '' : ' is-loue'}">
+      <span class="dispo-ava">${cover}</span>
+      <span class="dispo-nom"><strong>${esc(v.name)}</strong>${meta ? `<small>${meta}</small>` : ''}</span>
+      <span class="dispo-seg" role="group" aria-label="Disponibilité de ${esc(v.name)}">
+        <button type="button" class="${v.available ? 'is-on' : ''}"
+                data-dispo="${v.id}" data-v="1"${v.available ? ' aria-pressed="true"' : ''}>Disponible</button>
+        <button type="button" class="${v.available ? '' : 'is-on'}"
+                data-dispo="${v.id}" data-v="0"${v.available ? '' : ' aria-pressed="true"'}>En location</button>
+      </span>
+    </div>`;
+  }
+
   function renderLocation() {
     const vehs = state.vehicules;
     const ed = editingVeh ? vehs.find(v => v.id === editingVeh) : null;
     // Pôle proposé par défaut : celui qui parle de location
     const poleLoc = (state.expertises || []).find(e => norm(e.name).includes('location'));
     const expId = ed ? ed.expertise : (poleLoc ? poleLoc.id : '');
-    return `
+    return renderDispoParc() + `
       <div class="panel">
-        <div class="panel-head"><h3>${ed ? '${IC.pencil} Modifier le véhicule' : 'Ajouter un véhicule'}</h3>
+        <div class="panel-head"><h3>${ed ? `${IC.pencil} Modifier le véhicule` : 'Ajouter un véhicule'}</h3>
           <span class="sub">${ed ? esc(ed.name) : 'Il apparaîtra sur la page Location du site'}</span></div>
         <form id="vehForm">
           <div class="form-row">
             <div class="field"><label>Nom du véhicule *</label><input id="vName" required value="${ed ? esc(ed.name) : ''}" placeholder="Ex. Toyota Corolla" /></div>
             <div class="field"><label>Année</label><input id="vYear" value="${ed ? esc(ed.year || '') : ''}" placeholder="Ex. 2021" /></div>
           </div>
+          <div class="field"><label>Ville</label>
+            <input id="vVille" maxlength="80" value="${ed ? esc(ed.ville || '') : ''}" placeholder="Ex. Douala" />
+            <span class="hint">Ville où le véhicule est basé : elle s'affiche sur la carte et sert à la recherche.</span></div>
           <div class="form-row">
-            <div class="field"><label>Prix en ville / jour (FCFA)</label><input id="vVille" type="number" min="0" value="${ed ? ed.price_ville : 0}" /></div>
-            <div class="field"><label>Prix hors ville / jour (FCFA)</label><input id="vHorsVille" type="number" min="0" value="${ed ? ed.price_hors_ville : 0}" /></div>
+            <div class="field"><label>Prix en ville / jour (FCFA)</label><input id="vPrixVille" type="number" min="0" value="${ed ? ed.price_ville : 0}" /></div>
+            <div class="field"><label>Prix hors ville / jour (FCFA)</label><input id="vPrixHorsVille" type="number" min="0" value="${ed ? ed.price_hors_ville : 0}" /></div>
           </div>
           <div class="field"><label>Remise sur plusieurs jours</label>
             <input id="vRemise" maxlength="200" value="${ed ? esc(ed.remise || '') : ''}" placeholder="Ex. Remise à partir de 3 jours, nous consulter" />
@@ -319,8 +355,15 @@
             <div class="field"><label>Photo principale ${ed ? '(remplacer)' : ''}</label><input id="vPhoto" type="file" accept="image/*" /></div>
             <div class="field"><label>Photos supplémentaires (plusieurs)</label><input id="vPhotos" type="file" accept="image/*" multiple /></div>
           </div>
+          <div class="form-row">
+            <div class="field"><label>Vidéos du véhicule (plusieurs)</label>
+              <input id="vVideos" type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" multiple />
+              <span class="hint">MP4 ou WebM, 30 Mo maximum par fichier. Filmez le tour du véhicule et l'intérieur.</span></div>
+            <div class="field"><label>Vignette des vidéos</label><input id="vPoster" type="file" accept="image/*" />
+              <span class="hint">Facultatif : image montrée avant la lecture.</span></div>
+          </div>
           <div class="form-actions">
-            <button class="btn btn-primary" type="submit">${ed ? '${IC.save} Enregistrer' : '+ Ajouter le véhicule'}</button>
+            <button class="btn btn-primary" type="submit">${ed ? `${IC.save} Enregistrer` : '+ Ajouter le véhicule'}</button>
             ${ed ? '<button class="btn btn-ghost" type="button" id="vehCancel">Annuler</button>' : ''}
           </div>
         </form>
@@ -333,6 +376,7 @@
   }
   function vehCard(v) {
     const pics = (v.photo ? 1 : 0) + (v.photos || []).length;
+    const vids = (v.videos || []).length;
     const cover = v.photo ? `<img src="${v.photo}" alt="${esc(v.name)}">`
       : ((v.photos || [])[0] ? `<img src="${v.photos[0].image}" alt="${esc(v.name)}">` : IC.car);
     return `<div class="chef-card">
@@ -340,13 +384,14 @@
       <button class="btn-icon chef-del" data-del-veh="${v.id}" title="Supprimer">${IC.trash}</button>
       <div class="chef-ava" style="background:#2563C9;border-radius:12px">${cover}</div>
       <h4>${esc(v.name)}</h4>
-      <span class="chef-pole">${v.available ? 'Disponible' : 'Indisponible'}${v.year ? ' · ' + esc(v.year) : ''}</span>
+      <span class="chef-pole">${v.available ? 'Disponible' : 'Indisponible'}${v.year ? ' · ' + esc(v.year) : ''}${v.ville ? ' · ' + esc(v.ville) : ''}</span>
       <div class="chef-info">
         ${v.price_ville ? 'Ville : ' + fcfa(v.price_ville) + ' / jour<br>' : 'Ville : sur demande<br>'}
         ${v.price_hors_ville ? 'Hors ville : ' + fcfa(v.price_hors_ville) + ' / jour<br>' : 'Hors ville : sur demande<br>'}
         ${v.remise ? `<span class="mini">${IC.tag} ${esc(v.remise)}</span><br>` : ''}
-        <span class="mini">${pics} photo${pics > 1 ? 's' : ''}</span>
+        <span class="mini">${pics} photo${pics > 1 ? 's' : ''}${vids ? ' · ' + vids + ' vidéo' + (vids > 1 ? 's' : '') : ''}</span>
         ${(v.photos || []).length ? `<br>${v.photos.map(p => `<button class="btn-icon" data-del-photo="${p.id}" title="Supprimer cette photo">${IC.trash}</button>`).join('')}` : ''}
+        ${vids ? `<br>${v.videos.map(w => `<button class="btn-icon" data-del-video="${w.id}" title="Supprimer cette vidéo">${IC.trash}</button>`).join('')}` : ''}
       </div>
     </div>`;
   }
@@ -392,13 +437,44 @@
   /* ====== Vue : Évaluations immigration ====== */
   // Le détail des réponses est replié : la liste reste lisible, le conseiller
   // ouvre le dossier qui l'intéresse.
+  /* Ouverture des destinations : le barème (montants, remarques) reste dans le
+     fichier public, on ne pilote ici que « on traite ce pays, ou pas ». */
+  function renderDestinations() {
+    const pays = state.paysImmigration || [];
+    if (!pays.length) return '';
+    const fermes = pays.filter(p => !p.ouvert).length;
+    return `
+      <div class="panel">
+        <div class="panel-head"><h3>Destinations proposées</h3>
+          <span class="sub">${fermes ? fermes + ' destination' + (fermes > 1 ? 's' : '') + ' fermée' + (fermes > 1 ? 's' : '') : 'Toutes ouvertes'} — une destination fermée reste visible sur le site, mais n'est plus sélectionnable.</span></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Pays</th><th>Statut</th><th>Motif affiché au visiteur (facultatif)</th></tr></thead>
+          <tbody>${pays.map(paysRow).join('')}</tbody>
+        </table></div>
+      </div>`;
+  }
+  function paysRow(p) {
+    return `<tr>
+      <td class="cell-strong">${esc(p.nom)}</td>
+      <td><select class="status-select" data-pays-ouvert="${p.id}">
+        <option value="1"${p.ouvert ? ' selected' : ''}>Ouverte</option>
+        <option value="0"${p.ouvert ? '' : ' selected'}>Non disponible</option>
+      </select></td>
+      <td><input class="cell-input" data-pays-message="${p.id}" maxlength="200"
+                 value="${esc(p.message || '')}"
+                 placeholder="Ex. Rendez-vous consulaires suspendus jusqu'en mars" /></td>
+    </tr>`;
+  }
+
   function renderImmigration() {
     const list = state.evaluations || [];
     const ST = ['nouvelle', 'contactee', 'accompagnee', 'close'];
     const LIB = { nouvelle: 'Nouvelle', contactee: 'Contactée', accompagnee: 'En accompagnement', close: 'Close' };
-    if (!list.length) return `<div class="panel">${emptyBox('Aucune évaluation reçue pour le moment.')}</div>`;
 
-    return `
+    if (!list.length) return renderDestinations() +
+      `<div class="panel">${emptyBox('Aucune évaluation reçue pour le moment.')}</div>`;
+
+    return renderDestinations() + `
       <div class="panel">
         <div class="panel-head"><h3>Demandes reçues (${list.length})</h3>
           <a class="btn btn-ghost btn-sm" href="immigration.html" target="_blank" rel="noopener">Voir la page ↗</a></div>
@@ -565,14 +641,25 @@
     }
 
     if (name === 'location') {
+      viewEl.querySelectorAll('[data-dispo]').forEach(b => b.addEventListener('click', async () => {
+        const dispo = b.dataset.v === '1';
+        const veh = (state.vehicules || []).find(x => String(x.id) === b.dataset.dispo);
+        if (veh && veh.available === dispo) return;     // déjà dans cet état : rien à envoyer
+        try {
+          await API.patch('/vehicules/' + b.dataset.dispo + '/', { available: dispo });
+          toast(dispo ? 'Véhicule disponible ✓' : 'Véhicule marqué en location');
+          await setView('location');
+        } catch (err) { alert(err.message); }
+      }));
       $('vehForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData();
         fd.append('name', $('vName').value.trim());
         fd.append('year', $('vYear').value.trim());
         fd.append('expertise', $('vExp').value);
-        fd.append('price_ville', $('vVille').value || 0);
-        fd.append('price_hors_ville', $('vHorsVille').value || 0);
+        fd.append('ville', $('vVille').value.trim());
+        fd.append('price_ville', $('vPrixVille').value || 0);
+        fd.append('price_hors_ville', $('vPrixHorsVille').value || 0);
         fd.append('remise', $('vRemise').value.trim());
         fd.append('available', $('vAvail').value === '1' ? 'true' : 'false');
         fd.append('description', $('vDesc').value.trim());
@@ -589,6 +676,21 @@
             pf.append('image', extra[i]);
             pf.append('order', i);
             await API.postForm('/vehicule-photos/', pf);
+          }
+          // Vidéos : même principe, la vignette éventuelle est jointe à chacune
+          const clips = $('vVideos').files;
+          const poster = $('vPoster').files[0];
+          for (let i = 0; i < clips.length; i++) {
+            if (clips[i].size > 30 * 1024 * 1024) {
+              alert('« ' + clips[i].name + ' » dépasse 30 Mo : elle n\'a pas été envoyée.');
+              continue;
+            }
+            const vf = new FormData();
+            vf.append('vehicule', veh.id);
+            vf.append('video', clips[i]);
+            if (poster) vf.append('poster', poster);
+            vf.append('order', i);
+            await API.postForm('/vehicule-videos/', vf);
           }
           editingVeh = null;
           await setView('location');
@@ -607,6 +709,10 @@
         if (!confirm('Supprimer cette photo ?')) return;
         await API.del('/vehicule-photos/' + b.dataset.delPhoto + '/'); toast('Photo supprimée'); await setView('location');
       }));
+      viewEl.querySelectorAll('[data-del-video]').forEach(b => b.addEventListener('click', async () => {
+        if (!confirm('Supprimer cette vidéo ?')) return;
+        await API.del('/vehicule-videos/' + b.dataset.delVideo + '/'); toast('Vidéo supprimée'); await setView('location');
+      }));
     }
 
     if (name === 'reservations') {
@@ -623,6 +729,25 @@
     }
 
     if (name === 'immigration') {
+      viewEl.querySelectorAll('[data-pays-ouvert]').forEach(sel => sel.addEventListener('change', async () => {
+        const ouvert = sel.value === '1';
+        try {
+          await API.patch('/pays-immigration/' + sel.dataset.paysOuvert + '/', { ouvert: ouvert });
+          toast(ouvert ? 'Destination rouverte ✓' : 'Destination fermée');
+          await setView('immigration');
+        } catch (err) { alert(err.message); }
+      }));
+      // Motif : enregistré à la sortie du champ, pour ne pas envoyer une requête par frappe
+      viewEl.querySelectorAll('[data-pays-message]').forEach(inp => {
+        const initial = inp.value;
+        inp.addEventListener('blur', async () => {
+          if (inp.value === initial) return;
+          try {
+            await API.patch('/pays-immigration/' + inp.dataset.paysMessage + '/', { message: inp.value.trim() });
+            toast('Motif enregistré ✓');
+          } catch (err) { alert(err.message); inp.value = initial; }
+        });
+      });
       viewEl.querySelectorAll('[data-eval-detail]').forEach(b => b.addEventListener('click', () => {
         const bloc = $('evalDetail-' + b.dataset.evalDetail);
         if (bloc) {

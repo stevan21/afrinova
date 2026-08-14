@@ -11,13 +11,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from .models import (Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis,
-                     Vehicule, VehiculePhoto, Reservation, EvaluationImmigration)
+                     Vehicule, VehiculePhoto, VehiculeVideo, Reservation,
+                     PaysImmigration, EvaluationImmigration)
 from .serializers import (
     MemberSerializer, ExpertiseSerializer, ExpertiseDetailSerializer,
     PrestationSerializer, RealisationSerializer,
     NoteSerializer, ReportSerializer, MessageSerializer, DevisSerializer, UserSerializer,
-    VehiculeSerializer, VehiculePhotoSerializer, ReservationSerializer,
-    EvaluationImmigrationSerializer,
+    VehiculeSerializer, VehiculePhotoSerializer, VehiculeVideoSerializer, ReservationSerializer,
+    PaysImmigrationSerializer, EvaluationImmigrationSerializer,
 )
 
 
@@ -27,6 +28,21 @@ def user_can_edit_expertise(user, expertise):
         return True
     member = getattr(user, "member", None)
     return bool(member and expertise and member.expertise_id == expertise.id)
+
+
+def user_gere_immigration(user):
+    """Admin, ou l'expert affecté au pôle Immigration.
+
+    L'immigration n'est rattachée à aucun pôle en base : on reconnaît le pôle
+    à son nom, comme le fait déjà la page publique.
+    """
+    if not (user and user.is_authenticated):
+        return False
+    if user.is_staff:
+        return True
+    member = getattr(user, "member", None)
+    expertise = getattr(member, "expertise", None)
+    return bool(expertise and "immigration" in (expertise.name or "").lower())
 
 
 # ===================== Authentification =====================
@@ -273,22 +289,15 @@ class VehiculeViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
-        qs = Vehicule.objects.prefetch_related("photos").select_related("expertise")
+        qs = (Vehicule.objects.prefetch_related("photos", "videos")
+              .select_related("expertise"))
         exp_id = self.request.query_params.get("expertise")
         if exp_id:
             qs = qs.filter(expertise_id=exp_id)
-        # Le public ne voit que les véhicules disponibles ; les gestionnaires voient tout.
-        user = self.request.user
-        if self.action == "list" and not (user.is_authenticated and self._manages_any(user)):
-            qs = qs.filter(available=True)
-        return qs
-
-    @staticmethod
-    def _manages_any(user):
-        if user.is_staff:
-            return True
-        member = getattr(user, "member", None)
-        return bool(member and member.expertise_id)
+        # Les véhicules loués restent visibles : la page affiche « Indisponible »
+        # plutôt que de les faire disparaître du parc. On les renvoie en fin de
+        # liste pour garder le parc réservable en tête.
+        return qs.order_by("-available", "order", "-id")
 
     def _check(self, expertise):
         if not user_can_edit_expertise(self.request.user, expertise):
@@ -318,6 +327,37 @@ class VehiculePhotoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = VehiculePhoto.objects.select_related("vehicule__expertise")
+        veh_id = self.request.query_params.get("vehicule")
+        return qs.filter(vehicule_id=veh_id) if veh_id else qs
+
+    def _check(self, vehicule):
+        if not user_can_edit_expertise(self.request.user, vehicule.expertise if vehicule else None):
+            raise PermissionDenied("Vous ne gérez pas ce pôle.")
+
+    def perform_create(self, serializer):
+        self._check(serializer.validated_data.get("vehicule"))
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self._check(serializer.instance.vehicule)
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check(instance.vehicule)
+        instance.delete()
+
+
+class VehiculeVideoViewSet(viewsets.ModelViewSet):
+    """Vidéos de présentation d'un véhicule."""
+    serializer_class = VehiculeVideoSerializer
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = VehiculeVideo.objects.select_related("vehicule__expertise")
         veh_id = self.request.query_params.get("vehicule")
         return qs.filter(vehicule_id=veh_id) if veh_id else qs
 
@@ -372,6 +412,37 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
 
 # ===================== Immigration =====================
+class PaysImmigrationViewSet(viewsets.ModelViewSet):
+    """Destinations proposées par le questionnaire d'immigration.
+
+    Lecture publique : la page a besoin de savoir lesquelles sont fermées.
+    Écriture réservée à l'admin et à l'expert du pôle Immigration.
+    """
+    serializer_class = PaysImmigrationSerializer
+    queryset = PaysImmigration.objects.all()
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
+    def _check(self):
+        if not user_gere_immigration(self.request.user):
+            raise PermissionDenied("Vous ne gérez pas le pôle Immigration.")
+
+    def perform_create(self, serializer):
+        self._check()
+        serializer.save()
+
+    def perform_update(self, serializer):
+        self._check()
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        self._check()
+        instance.delete()
+
+
 class EvaluationImmigrationViewSet(viewsets.ModelViewSet):
     """Dépôt public de l'auto-évaluation ; consultation réservée aux gestionnaires.
 
@@ -387,12 +458,7 @@ class EvaluationImmigrationViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     def _gere_immigration(self):
-        user = self.request.user
-        if user.is_staff:
-            return True
-        member = getattr(user, "member", None)
-        expertise = getattr(member, "expertise", None)
-        return bool(expertise and "immigration" in (expertise.name or "").lower())
+        return user_gere_immigration(self.request.user)
 
     def get_queryset(self):
         if self.action == "create":

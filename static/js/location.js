@@ -54,30 +54,55 @@
   }
 
   /* ---------------- Rendu des cartes ---------------- */
-  function photosOf(v) {
+  /* Photos et vidéos partagent la même visionneuse : une seule liste, chaque
+     entrée porte son type pour que l'affichage choisisse <img> ou <video>. */
+  function mediasOf(v) {
     const list = [];
-    if (v.photo) list.push(v.photo);
-    (v.photos || []).forEach((p) => { if (p.image) list.push(p.image); });
+    if (v.photo) list.push({ type: 'photo', src: v.photo });
+    (v.photos || []).forEach((p) => { if (p.image) list.push({ type: 'photo', src: p.image }); });
+    (v.videos || []).forEach((w) => {
+      if (w.video) list.push({ type: 'video', src: w.video, poster: w.poster || '' });
+    });
     return list;
   }
 
   function card(v) {
-    const pics = photosOf(v);
-    const media = pics.length
-      ? `<img src="${esc(pics[0])}" alt="${esc(v.name)}" loading="lazy">`
-      : `<img class="is-placeholder" src="${esc(PHOTO_DEFAUT)}" alt="${esc(v.name)}" loading="lazy">`;
+    const medias = mediasOf(v);
+    const cover = medias[0];
+    let media;
+    if (!cover) {
+      media = `<img class="is-placeholder" src="${esc(PHOTO_DEFAUT)}" alt="${esc(v.name)}" loading="lazy">`;
+    } else if (cover.type === 'video') {
+      // Vidéo en couverture : on montre sa vignette, la lecture se fait dans la visionneuse
+      media = cover.poster
+        ? `<img src="${esc(cover.poster)}" alt="${esc(v.name)}" loading="lazy">`
+        : `<video src="${esc(cover.src)}" preload="metadata" muted playsinline></video>`;
+    } else {
+      media = `<img src="${esc(cover.src)}" alt="${esc(v.name)}" loading="lazy">`;
+    }
 
     let thumbs = '';
-    if (pics.length > 1) {
-      const extra = pics.slice(1, 4).map((src, i) =>
-        `<button class="loc-thumb" data-veh="${v.id}" data-i="${i + 1}" aria-label="Photo ${i + 2}">
-           <img src="${esc(src)}" alt="" loading="lazy"></button>`).join('');
-      const more = pics.length > 4
+    if (medias.length > 1) {
+      const vignette = (m) => (m.type === 'video'
+        ? (m.poster ? `<img src="${esc(m.poster)}" alt="" loading="lazy">`
+                    : `<video src="${esc(m.src)}" preload="metadata" muted></video>`) +
+          '<span class="loc-thumb-play" aria-hidden="true">▶</span>'
+        : `<img src="${esc(m.src)}" alt="" loading="lazy">`);
+      const extra = medias.slice(1, 4).map((m, i) =>
+        `<button class="loc-thumb" data-veh="${v.id}" data-i="${i + 1}"
+           aria-label="${m.type === 'video' ? 'Vidéo' : 'Photo'} ${i + 2}">
+           ${vignette(m)}</button>`).join('');
+      const more = medias.length > 4
         ? `<button class="loc-thumb loc-thumb-more" data-veh="${v.id}" data-i="4"
-             aria-label="Voir les ${pics.length} photos">+${pics.length - 4}</button>`
+             aria-label="Voir les ${medias.length} médias">+${medias.length - 4}</button>`
         : '';
       thumbs = `<div class="loc-thumbs">${extra}${more}</div>`;
     }
+
+    const nbVideos = (v.videos || []).length;
+    const badgeVideo = nbVideos
+      ? `<span class="loc-badge-video">▶ ${nbVideos} vidéo${nbVideos > 1 ? 's' : ''}</span>` : '';
+    const dispo = v.available !== false;
 
     // Tarif de la zone choisie en avant, l'autre rappelé en dessous
     const autre = zone === 'ville' ? 'hors_ville' : 'ville';
@@ -92,25 +117,43 @@
         ${v.remise ? `<p class="loc-remise">${esc(v.remise)}</p>` : ''}
       </div>`;
 
-    return `<article class="loc-card">
+    // Condition rappelée sur chaque véhicule : elle vaut pour tout le parc,
+    // le client la voit sans avoir à ouvrir la fiche de réservation.
+    const charges = `<p class="loc-charges">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+          <path d="M12 8h.01M12 11v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+        </svg>
+        <span>Le carburant et les péages sont à la charge du client.</span>
+      </p>`;
+
+    // Ligne « 2021 · Douala » sous le nom, chaque partie facultative
+    const meta = [v.year, v.ville].filter(Boolean).map(esc).join(' · ');
+
+    return `<article class="loc-card${dispo ? '' : ' is-indispo'}">
       <div class="loc-card-media" data-veh="${v.id}" data-i="0">
         ${media}
         ${thumbs}
+        <span class="loc-statut ${dispo ? 'is-dispo' : 'is-loue'}">${dispo ? 'Disponible' : 'Indisponible'}</span>
+        ${badgeVideo}
         <span class="loc-pill">Avec ou sans chauffeur</span>
       </div>
       <div class="loc-card-body">
         <h3>${esc(v.name)}</h3>
-        ${v.year ? `<p class="loc-year">${esc(v.year)}</p>` : ''}
+        ${meta ? `<p class="loc-year">${meta}</p>` : ''}
         ${priceBlock}
-        <button class="btn btn-primary" data-reserve="${v.id}">Réserver</button>
+        ${charges}
+        ${dispo
+          ? `<button class="btn btn-primary" data-reserve="${v.id}">Réserver</button>`
+          : `<button class="btn btn-ghost" data-reserve="${v.id}">Demander une date</button>`}
       </div>
     </article>`;
   }
 
-  // On cherche dans le nom, l'année et la description : « automatique » ou
-  // « 7 places » ramènent le bon véhicule même sans connaître son modèle.
+  // On cherche dans le nom, l'année, la ville et la description : « automatique »,
+  // « Douala » ou « 7 places » ramènent le bon véhicule sans connaître son modèle.
   function correspond(v, q) {
-    return norm([v.name, v.year, v.description].join(' ')).includes(q);
+    return norm([v.name, v.year, v.ville, v.description].join(' ')).includes(q);
   }
 
   function render() {
@@ -145,27 +188,46 @@
 
   /* ---------------- Visionneuse ---------------- */
   const lb = $('locLightbox');
-  let lbPics = [], lbIdx = 0;
+  let lbMedias = [], lbIdx = 0;
 
   function openLb(vehId, start) {
     const v = vehicules.find((x) => String(x.id) === String(vehId));
     if (!v) return;
-    lbPics = photosOf(v);
-    if (!lbPics.length) return;
-    lbIdx = Math.min(start || 0, lbPics.length - 1);
+    lbMedias = mediasOf(v);
+    if (!lbMedias.length) return;
+    lbIdx = Math.min(start || 0, lbMedias.length - 1);
     showLb();
     lb.hidden = false;
     document.body.style.overflow = 'hidden';
   }
   function showLb() {
-    $('lbImg').src = lbPics[lbIdx];
-    $('lbCount').textContent = `${lbIdx + 1} / ${lbPics.length}`;
-    const multi = lbPics.length > 1;
+    const m = lbMedias[lbIdx];
+    const img = $('lbImg'), vid = $('lbVideo');
+    vid.pause();                                         // la vidéo quittée ne joue pas en fond
+    if (m.type === 'video') {
+      vid.src = m.src;
+      vid.poster = m.poster || '';
+      vid.hidden = false;
+      img.hidden = true;
+      img.removeAttribute('src');
+    } else {
+      vid.removeAttribute('src');
+      vid.load();
+      vid.hidden = true;
+      img.src = m.src;
+      img.hidden = false;
+    }
+    $('lbCount').textContent = `${lbIdx + 1} / ${lbMedias.length}`;
+    const multi = lbMedias.length > 1;
     $('lbPrev').style.display = multi ? '' : 'none';
     $('lbNext').style.display = multi ? '' : 'none';
   }
-  function closeLb() { lb.hidden = true; document.body.style.overflow = ''; }
-  function step(d) { lbIdx = (lbIdx + d + lbPics.length) % lbPics.length; showLb(); }
+  function closeLb() {
+    $('lbVideo').pause();
+    lb.hidden = true;
+    document.body.style.overflow = '';
+  }
+  function step(d) { lbIdx = (lbIdx + d + lbMedias.length) % lbMedias.length; showLb(); }
 
   $('lbClose').addEventListener('click', closeLb);
   $('lbPrev').addEventListener('click', () => step(-1));
@@ -224,13 +286,18 @@
 
     if (finTimer) { clearTimeout(finTimer); finTimer = null; $('resaSubmit').disabled = false; }
 
-    const pics = photosOf(selected);
-    $('resaThumb').src = pics.length ? pics[0] : PHOTO_DEFAUT;
+    // Vignette : la première photo, ou l'affiche d'une vidéo, sinon l'illustration
+    const premier = mediasOf(selected).find((m) => m.type === 'photo' || m.poster);
+    $('resaThumb').src = premier ? (premier.type === 'photo' ? premier.src : premier.poster) : PHOTO_DEFAUT;
     $('resaThumb').alt = selected.name;
     $('resaTitle').textContent = selected.name;
     const prixVille = prixZone(selected, 'ville');
-    $('resaVeh').textContent = (selected.year ? selected.year + ' · ' : '') +
-      (prixVille ? fcfa(prixVille) + ' / jour en ville' : 'Tarif sur demande');
+    $('resaVeh').textContent = [
+      selected.year,
+      selected.ville,
+      prixVille ? fcfa(prixVille) + ' / jour en ville' : 'Tarif sur demande',
+      selected.available === false ? 'Actuellement loué' : '',
+    ].filter(Boolean).join(' · ');
 
     // La description ne tient pas sur la carte compacte : on la rappelle ici
     const desc = $('resaDesc');
@@ -353,7 +420,7 @@
     const lignes = [
       'Bonjour AFRINOVA, je souhaite réserver un véhicule.',
       '',
-      'Véhicule : ' + d.vehicule,
+      'Véhicule : ' + d.vehicule + (d.ville ? ' (' + d.ville + ')' : ''),
       'Du ' + jour(d.debut) + ' au ' + jour(d.fin) + ' (' + d.jours + (d.jours > 1 ? ' jours' : ' jour') + ')',
       'Trajet : ' + ZONES[d.zone],
       'Chauffeur : ' + (d.chauffeur ? 'oui' : 'non'),
@@ -363,6 +430,7 @@
     if (d.tarif) lignes.push('Tarif affiché : ' + fcfa(d.tarif) + ' / jour');
     if (d.jours > 1 && d.remise) lignes.push('Remise annoncée : ' + d.remise);
     if (d.message) lignes.push('Précisions : ' + d.message);
+    lignes.push('', 'Noté : le carburant et les péages sont à ma charge.');
     return lignes.join('\n');
   }
 
@@ -389,6 +457,7 @@
     const jours = nbJours();
     const texte = messageWhatsApp({
       vehicule: selected ? selected.name + (selected.year ? ' (' + selected.year + ')' : '') : 'à conseiller',
+      ville: selected ? selected.ville : '',
       debut, fin, jours, zone: zoneResa, chauffeur, nom, tel, message: msg,
       tarif: selected ? prixZone(selected, zoneResa) : 0,
       remise: selected ? selected.remise : '',

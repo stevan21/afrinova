@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import (Member, Expertise, Prestation, Realisation, Note, Report, Message, Devis,
-                     Vehicule, VehiculePhoto, Reservation, EvaluationImmigration)
+                     Vehicule, VehiculePhoto, VehiculeVideo, Reservation,
+                     PaysImmigration, EvaluationImmigration)
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -81,14 +82,21 @@ class VehiculePhotoSerializer(serializers.ModelSerializer):
         fields = ["id", "vehicule", "image", "order"]
 
 
+class VehiculeVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehiculeVideo
+        fields = ["id", "vehicule", "video", "poster", "order"]
+
+
 class VehiculeSerializer(serializers.ModelSerializer):
     photos = VehiculePhotoSerializer(many=True, read_only=True)
+    videos = VehiculeVideoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Vehicule
-        fields = ["id", "expertise", "name", "year",
+        fields = ["id", "expertise", "name", "year", "ville",
                   "price_ville", "price_hors_ville", "remise", "available",
-                  "photo", "photos", "description", "order"]
+                  "photo", "photos", "videos", "description", "order"]
 
 
 class ReservationSerializer(serializers.ModelSerializer):
@@ -108,6 +116,12 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"date_fin": "La date de fin doit suivre la date de début."})
         return attrs
+
+
+class PaysImmigrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaysImmigration
+        fields = ["id", "cle", "nom", "ouvert", "message", "order"]
 
 
 class EvaluationImmigrationSerializer(serializers.ModelSerializer):

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
 from PIL import Image, ImageOps
@@ -150,6 +151,8 @@ class Vehicule(models.Model):
     expertise = models.ForeignKey(Expertise, on_delete=models.CASCADE, related_name="vehicules")
     name = models.CharField("Nom du véhicule", max_length=160)
     year = models.CharField("Année", max_length=10, blank=True, default="")
+    # Ville où le véhicule est basé : le client sait tout de suite où le prendre.
+    ville = models.CharField("Ville", max_length=80, blank=True, default="")
     # Tarifs journaliers en FCFA — 0 signifie « non communiqué »
     price_ville = models.PositiveIntegerField("Prix en ville / jour", default=0)
     price_hors_ville = models.PositiveIntegerField("Prix hors ville / jour", default=0)
@@ -190,6 +193,32 @@ class VehiculePhoto(models.Model):
         return f"Photo {self.vehicule}"
 
 
+class VehiculeVideo(models.Model):
+    """Vidéo de présentation d'un véhicule (tour du propriétaire, intérieur…).
+
+    Le fichier est servi tel quel : pas de ré-encodage côté serveur, on se
+    contente de restreindre les extensions que le navigateur sait lire.
+    """
+    vehicule = models.ForeignKey(Vehicule, on_delete=models.CASCADE, related_name="videos")
+    video = models.FileField("Vidéo", upload_to="vehicules/videos/",
+                             validators=[FileExtensionValidator(["mp4", "webm", "ogg", "mov", "m4v"])])
+    # Image figée montrée avant lecture ; sinon le navigateur affiche un cadre noir.
+    poster = models.ImageField("Vignette", upload_to="vehicules/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "Vidéo de véhicule"
+        verbose_name_plural = "Vidéos de véhicule"
+
+    def save(self, *args, **kwargs):
+        _enregistrer_optimisee(self.poster)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Vidéo {self.vehicule}"
+
+
 class Reservation(models.Model):
     """Demande de réservation envoyée depuis la page de location."""
     STATUS = [
@@ -221,6 +250,32 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.vehicule or 'véhicule supprimé'}"
+
+
+class PaysImmigration(models.Model):
+    """Ouverture d'une destination proposée sur /immigration.html.
+
+    Les barèmes (fonds attendus, remarques) restent dans le fichier public
+    static/js/immigration-bareme.js : seule la disponibilité se pilote ici,
+    parce qu'elle change au gré des consulats sans toucher au calcul.
+
+    La clé reprend celle du barème. Une destination absente de cette table
+    est considérée ouverte : le questionnaire n'est jamais bloqué par un oubli.
+    """
+    cle = models.SlugField("Clé du barème", max_length=40, unique=True)
+    nom = models.CharField("Pays", max_length=80)
+    ouvert = models.BooleanField("Destination ouverte", default=True)
+    # Affiché au visiteur quand la destination est fermée ; sinon un texte générique
+    message = models.CharField("Motif de la fermeture", max_length=200, blank=True, default="")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "nom"]
+        verbose_name = "Destination immigration"
+        verbose_name_plural = "Destinations immigration"
+
+    def __str__(self):
+        return f"{self.nom} ({'ouverte' if self.ouvert else 'fermée'})"
 
 
 class EvaluationImmigration(models.Model):
