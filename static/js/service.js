@@ -12,6 +12,41 @@
   const slug = (params.get('p') || '').trim().toLowerCase();
   if (!slug) { location.replace('index.html#services'); return; }
 
+  /* ---- Compteurs automatiques (Prestations / Réalisations) ----
+     - Chaque pôle démarre à un chiffre entre COMPTEUR_MIN et COMPTEUR_MAX.
+     - Chaque semaine (depuis COMPTEUR_DEBUT), on ajoute +1 ou +2.
+     - Le « hasard » dépend du pôle et du numéro de semaine : tous les
+       visiteurs voient le même chiffre, qui ne change pas en rafraîchissant.
+     - Si le vrai nombre saisi dans l'admin est plus grand, c'est lui qui s'affiche. */
+  const COMPTEUR_DEBUT = Date.UTC(2026, 8, 21); // lundi 21 septembre 2026 (mois 8 = septembre)
+  const COMPTEUR_MIN = 5;
+  const COMPTEUR_MAX = 12;
+  const UNE_SEMAINE = 7 * 24 * 60 * 60 * 1000;
+
+  // Transforme un texte en nombre stable (même texte => même nombre).
+  function hash(txt) {
+    let h = 2166136261;
+    for (let i = 0; i < txt.length; i++) {
+      h ^= txt.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    // mélange final pour bien répartir les chiffres
+    h ^= h >>> 16; h = Math.imul(h, 0x85ebca6b);
+    h ^= h >>> 13; h = Math.imul(h, 0xc2b2ae35);
+    h ^= h >>> 16;
+    return h >>> 0;
+  }
+
+  function compteur(pole, type, vraiNombre) {
+    const cle = pole + ':' + type;
+    let total = COMPTEUR_MIN + (hash(cle) % (COMPTEUR_MAX - COMPTEUR_MIN + 1));
+    const semaines = Math.max(0, Math.floor((Date.now() - COMPTEUR_DEBUT) / UNE_SEMAINE));
+    for (let s = 1; s <= semaines; s++) {
+      total += 1 + (hash(cle + ':' + s) % 2); // +1 ou +2
+    }
+    return Math.max(total, vraiNombre || 0);
+  }
+
   (async function () {
     let d;
     try { d = await API.get('/services/' + encodeURIComponent(slug) + '/'); }
@@ -39,8 +74,8 @@
 
     /* ---- Aside : compteurs + atouts ---- */
     $('svcStats').innerHTML = [
-      [d.prestations.length, 'Prestations'],
-      [d.realisations.length, 'Réalisations'],
+      [compteur(slug, 'prestations', d.prestations.length), 'Prestations'],
+      [compteur(slug, 'realisations', d.realisations.length), 'Réalisations'],
     ].map(([n, l]) => `<div class="svc-stat"><strong>${n}</strong><span>${l}</span></div>`).join('');
     $('svcAtouts').innerHTML = ['Équipe dédiée', 'Devis transparent', 'Qualité & délais', 'Suivi personnalisé']
       .map((a) => `<li>${a}</li>`).join('');
